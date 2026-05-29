@@ -206,10 +206,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     setChatInput('');
     setIsBotTyping(true);
 
-    // PECAH KUNCI GROQ DI SINI AGAR GITHUB TIDAK BISA BACA
-    const p1 = "gsk_";
-    const p2 = "l4lGkfE8AvqTm1LXPGmsWGdyb3FYQ83EkDiWj0wvO0E6d8OrqRwU"; // Jangan tulis "gsk_"-nya lagi di sini
-    const SILUMAN_KEY = p1 + p2;
+    const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
     try {
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
