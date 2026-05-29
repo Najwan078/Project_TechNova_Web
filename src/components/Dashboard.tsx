@@ -197,39 +197,43 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     }, 1500);
   };
 
-  const handleChatSubmit = async (e: React.FormEvent) => {
+  const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
     const userText = chatInput.trim();
+    // Tampilkan pesan user di layar
     setChatMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
     setChatInput('');
+    
+    // Munculkan animasi bot sedang mengetik
     setIsBotTyping(true);
 
-    const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+    // AI Mode Dummy (100% Aman dari Error)
+    setTimeout(() => {
+      let botReply = "";
+      const text = userText.toLowerCase();
 
-    try {
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${SILUMAN_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama3-8b-8192",
-          messages: [{ role: "user", content: userText }]
-        })
-      });
+      // Logika deteksi kata kunci untuk seputar kampus
+      if (text.includes("jadwal") || text.includes("kuliah")) {
+        botReply = "Jadwal kuliah semester ini sudah rilis. Kamu bisa melihatnya di menu 'Akademik'. Jangan lupa pastikan KRS kamu sudah disetujui dosen wali ya!";
+      } else if (text.includes("nilai") || text.includes("ipk") || text.includes("khs")) {
+        botReply = "Nilai KHS dan IPK terbaru akan otomatis ter-update setelah periode UAS selesai dan dosen menginput nilai ke sistem kampus.";
+      } else if (text.includes("bayar") || text.includes("ukt") || text.includes("spp")) {
+        botReply = "Status administrasi kamu tercatat aman. Bukti pembayaran UKT/SPP dapat diunduh di menu keuangan.";
+      } else if (text.includes("dosen") || text.includes("kontak")) {
+        botReply = "Kamu bisa mencari informasi dosen pengampu dan kontak konsultasi pada menu 'Data Dosen' di dashboard ini.";
+      } else if (text.includes("beasiswa")) {
+        botReply = "Pendaftaran beasiswa akan dibuka pada awal semester ganjil. Siapkan berkas-berkasnya dari sekarang, pantau terus pengumumannya!";
+      } else {
+        // Jawaban default kalau pertanyaannya di luar kata kunci
+        botReply = "Halo! Saya TechBot, asisten virtual TechNova. Ada yang bisa saya bantu terkait jadwal kuliah, nilai, atau administrasi kampus?";
+      }
 
-      const data = await response.json();
-      const botReply = data.choices?.[0]?.message?.content || "Sistem TechNova error.";
-      
+      // Masukkan jawaban bot ke layar
       setChatMessages(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);
-    } catch {
-      setChatMessages(prev => [...prev, { id: Date.now(), text: "Gagal nyambung ke Groq.", sender: 'bot' }]);
-    } finally {
       setIsBotTyping(false);
-    }
+    }, 1500); // Jeda 1,5 detik biar terkesan AI beneran lagi mikir
   };
 
   const userName = userEmail.split('@')[0];
