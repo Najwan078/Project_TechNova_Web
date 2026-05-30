@@ -464,7 +464,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           { label: 'Total Mahasiswa', value: students.length, target: 50, color: 'bg-cyan-400', glow: 'shadow-cyan-400/50' },
                           { label: 'Mahasiswa Aktif', value: students.filter(s => s.status === 'Aktif').length, target: students.length || 1, color: 'bg-emerald-400', glow: 'shadow-emerald-400/50' },
                           { label: 'Mahasiswa Lulus', value: students.filter(s => s.status === 'Lulus').length, target: students.length || 1, color: 'bg-amber-400', glow: 'shadow-amber-400/50' },
-                          { label: 'Mahasiswa Cuti', value: students.filter(s => s.status === 'Cuti').length, target: students.length || 1, color: 'bg-purple-400', glow: 'shadow-purple-400/50' },
                         ].map((item) => {
                           const pct = Math.min(100, Math.round((item.value / item.target) * 100));
                           return (
@@ -709,7 +708,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           </div>
                           <div>
                             <h4 className="text-white font-semibold text-sm">Alamat Kampus</h4>
-                            <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">Gedung Utama Universitas Pamulang (UNPAM)<br/>Tangerang Selatan, Banten, Indonesia.</p>
+                            <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">Gedung Utama Jl. Teknologi No. 1,<br/>Tangerang Selatan, Banten, Indonesia.</p>
                           </div>
                         </div>
 
