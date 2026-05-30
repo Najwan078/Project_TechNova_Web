@@ -528,7 +528,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                                   ))}
                                 </Pie>
                                 <Tooltip 
-                                  offset={40}
+                                  offset={80}
                                   allowEscapeViewBox={{ x: true, y: true }}
                                   contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
                                   itemStyle={{ color: '#fff', fontWeight: 'bold' }}
