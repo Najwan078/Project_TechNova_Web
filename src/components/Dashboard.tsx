@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import BackgroundOrbs from './BackgroundOrbs';
 import Sidebar from './Sidebar';
 import StudentTable from './StudentTable';
@@ -155,14 +155,46 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   
   const aktifPersen = totalMhs === 0 ? 0 : Math.round((aktifMhs / totalMhs) * 100);
 
-  // Menyaring data hanya yang nilainya > 0 agar diagram tampil rapi (Tanpa warna ungu/lainnya)
   const chartData = [
-    { name: 'Aktif', value: aktifMhs, color: '#10b981' }, // emerald-500
-    { name: 'Lulus', value: lulusMhs, color: '#f59e0b' }  // amber-500
+    { name: 'Aktif', value: aktifMhs, color: '#10b981' }, 
+    { name: 'Lulus', value: lulusMhs, color: '#f59e0b' }  
   ].filter(item => item.value > 0);
 
-  // Default data jika kosong (biar lingkaran abu-abu tampil)
   const defaultChartData = [{ name: 'Belum Ada Data', value: 1, color: '#334155' }];
+
+  // === STATE & EFFECT UNTUK GRAFIK REAL-TIME LINE CHART ===
+  const [trendData, setTrendData] = useState<{ time: string; active: number }[]>([]);
+
+  useEffect(() => {
+    const currentActiveCount = students.filter(s => s.status === 'Aktif').length;
+    
+    // Inisialisasi data awal biar grafiknya nggak kosong saat baru dibuka
+    setTrendData(prev => {
+      if (prev.length === 0) {
+        return Array.from({ length: 7 }).map((_, i) => {
+          const d = new Date(Date.now() - (7 - i) * 3000);
+          return {
+            time: `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`,
+            active: currentActiveCount
+          };
+        });
+      }
+      return prev;
+    });
+
+    // Menjalankan fungsi penambah titik grafik setiap 3 detik
+    const interval = setInterval(() => {
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      
+      setTrendData(prev => {
+        const newData = [...prev, { time: timeStr, active: currentActiveCount }];
+        return newData.slice(-7); // Hapus data lama, biar grafiknya bergerak ke kanan!
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [students]); // Auto-update kalau jumlah mahasiswa aktif di tabel berubah
 
   const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -467,80 +499,119 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-start">
                   
-                  {/* === KOTAK TARGET MAHASISWA (UI DONAT RECHARTS) === */}
-                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group h-fit">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
-                    <div className="relative z-10">
-                      <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
-                        📊 <span className="group-hover:text-cyan-400 transition-colors duration-300">Target Mahasiswa</span>
-                      </h3>
+                  {/* Kolom Kiri: Donut Chart + Realtime Chart */}
+                  <div className="flex flex-col gap-6 w-full">
+                    {/* === KOTAK TARGET MAHASISWA (UI DONAT RECHARTS) === */}
+                    <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group h-fit">
+                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
+                      <div className="relative z-10">
+                        <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
+                          📊 <span className="group-hover:text-cyan-400 transition-colors duration-300">Target Mahasiswa</span>
+                        </h3>
+                        
+                        <div className="flex flex-col items-center gap-8">
+                          {/* Atas: Diagram Donat */}
+                          <div className="relative w-48 h-48 flex-shrink-0 flex items-center justify-center">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={chartData.length > 0 ? chartData : defaultChartData}
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius={65}
+                                  outerRadius={90}
+                                  paddingAngle={5}
+                                  dataKey="value"
+                                  stroke="none"
+                                >
+                                  {(chartData.length > 0 ? chartData : defaultChartData).map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                  ))}
+                                </Pie>
+                                <Tooltip 
+                                  contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                                  itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                                  cursor={{fill: 'transparent'}}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                            {/* Teks Persentase di Tengah Donat */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                              <span className="text-4xl font-bold text-white leading-none mb-1">{aktifPersen}%</span>
+                              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">AKTIF</span>
+                            </div>
+                          </div>
+
+                          {/* Bawah: Kotak Statistik Sejajar */}
+                          <div className="grid grid-cols-3 gap-3 w-full">
+                            <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 transition-all hover:bg-white/[0.06] flex flex-col items-center text-center justify-center group/card">
+                              <p className="text-[9px] text-slate-400 font-bold mb-1.5 tracking-wider group-hover/card:text-cyan-400 transition-colors uppercase">TOTAL</p>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold text-white leading-none">{totalMhs}</span>
+                                <span className="text-[10px] text-slate-500 font-medium">/ 50</span>
+                              </div>
+                            </div>
+                            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 transition-all hover:bg-emerald-500/10 flex flex-col items-center text-center justify-center group/card">
+                              <p className="text-[9px] text-emerald-500/80 font-bold mb-1.5 tracking-wider group-hover/card:text-emerald-400 transition-colors uppercase">AKTIF</p>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold text-emerald-400 leading-none">{aktifMhs}</span>
+                                <span className="text-[10px] text-emerald-500/50 font-medium">/ {totalMhs || 1}</span>
+                              </div>
+                            </div>
+                            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 transition-all hover:bg-amber-500/10 flex flex-col items-center text-center justify-center group/card">
+                              <p className="text-[9px] text-amber-500/80 font-bold mb-1.5 tracking-wider group-hover/card:text-amber-400 transition-colors uppercase">LULUS</p>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold text-amber-400 leading-none">{lulusMhs}</span>
+                                <span className="text-[10px] text-amber-500/50 font-medium">/ {totalMhs || 1}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* === KOTAK GRAFIK KARTESIUS REAL-TIME === */}
+                    <div className="glass rounded-3xl p-6 border border-white/[0.06] relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 h-fit shadow-[0_15px_40px_-10px_rgba(16,185,129,0.1)]">
+                      <div className="flex items-center justify-between mb-2 relative z-10">
+                        <h3 className="font-[Outfit] font-semibold text-white text-lg flex items-center gap-2">
+                          📈 <span className="group-hover:text-emerald-400 transition-colors duration-300">Live Tracker Aktif</span>
+                        </h3>
+                        <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                          <span className="text-[9px] text-emerald-400 uppercase tracking-widest font-bold">Real-time</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 mb-6">Memonitor jumlah mahasiswa aktif secara langsung setiap 3 detik.</p>
                       
-                      <div className="flex flex-col items-center gap-8">
-                        {/* Atas: Diagram Donat */}
-                        <div className="relative w-48 h-48 flex-shrink-0 flex items-center justify-center">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={chartData.length > 0 ? chartData : defaultChartData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={65}
-                                outerRadius={90}
-                                paddingAngle={5}
-                                dataKey="value"
-                                stroke="none"
-                              >
-                                {(chartData.length > 0 ? chartData : defaultChartData).map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip 
-                                contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
-                                itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                                cursor={{fill: 'transparent'}}
-                              />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          {/* Teks Persentase di Tengah Donat */}
-                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-4xl font-bold text-white leading-none mb-1">{aktifPersen}%</span>
-                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">AKTIF</span>
-                          </div>
-                        </div>
-
-                        {/* Bawah: Kotak Statistik Sejajar */}
-                        <div className="grid grid-cols-3 gap-3 w-full">
-                          
-                          <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 transition-all hover:bg-white/[0.06] flex flex-col items-center text-center justify-center group/card">
-                            <p className="text-[9px] text-slate-400 font-bold mb-1.5 tracking-wider group-hover/card:text-cyan-400 transition-colors uppercase">TOTAL</p>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-xl font-bold text-white leading-none">{totalMhs}</span>
-                              <span className="text-[10px] text-slate-500 font-medium">/ 50</span>
-                            </div>
-                          </div>
-
-                          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 transition-all hover:bg-emerald-500/10 flex flex-col items-center text-center justify-center group/card">
-                            <p className="text-[9px] text-emerald-500/80 font-bold mb-1.5 tracking-wider group-hover/card:text-emerald-400 transition-colors uppercase">AKTIF</p>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-xl font-bold text-emerald-400 leading-none">{aktifMhs}</span>
-                              <span className="text-[10px] text-emerald-500/50 font-medium">/ {totalMhs || 1}</span>
-                            </div>
-                          </div>
-
-                          <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 transition-all hover:bg-amber-500/10 flex flex-col items-center text-center justify-center group/card">
-                            <p className="text-[9px] text-amber-500/80 font-bold mb-1.5 tracking-wider group-hover/card:text-amber-400 transition-colors uppercase">LULUS</p>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-xl font-bold text-amber-400 leading-none">{lulusMhs}</span>
-                              <span className="text-[10px] text-amber-500/50 font-medium">/ {totalMhs || 1}</span>
-                            </div>
-                          </div>
-
-                        </div>
+                      <div className="h-44 w-full relative z-10 -ml-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                            <XAxis dataKey="time" stroke="rgba(255,255,255,0.3)" fontSize={10} tickMargin={10} tick={{fill: '#94a3b8'}} />
+                            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} tick={{fill: '#94a3b8'}} allowDecimals={false} domain={['dataMin - 1', 'dataMax + 1']} />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: 'rgba(16, 185, 129, 0.3)', borderRadius: '12px', fontSize: '12px', backdropFilter: 'blur(10px)' }}
+                              itemStyle={{ color: '#10b981', fontWeight: 'bold' }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="active" 
+                              name="Mahasiswa Aktif"
+                              stroke="#10b981" 
+                              strokeWidth={3} 
+                              dot={{ r: 4, fill: '#0a0a20', stroke: '#10b981', strokeWidth: 2 }} 
+                              activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
+                              animationDuration={500}
+                              isAnimationActive={true}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
                       </div>
                     </div>
                   </div>
 
-                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(168,85,247,0.15)] transition-all duration-500 relative overflow-hidden group">
+                  {/* Kolom Kanan: Kalender Akademik */}
+                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(168,85,247,0.15)] transition-all duration-500 relative overflow-hidden group h-full">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                     <div className="relative z-10">
                       <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
