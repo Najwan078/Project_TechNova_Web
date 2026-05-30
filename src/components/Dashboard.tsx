@@ -197,44 +197,50 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     }, 1500);
   };
 
-  const handleChatSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
+  const handleChatSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!chatInput.trim()) return;
 
-    const userText = chatInput.trim();
-    // Tampilkan pesan user di layar
-    setChatMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
-    setChatInput('');
-    
-    // Munculkan animasi bot sedang mengetik
-    setIsBotTyping(true);
+  const userText = chatInput.trim();
+  setChatMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
+  setChatInput('');
+  setIsBotTyping(true);
 
-    // AI Mode Dummy (100% Aman dari Error)
-    setTimeout(() => {
-      let botReply = "";
-      const text = userText.toLowerCase();
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [
+          {
+            role: 'system',
+            content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.
+Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan administrasi kampus secara ramah dan ringkas dalam Bahasa Indonesia.`,
+          },
+          { role: 'user', content: userText },
+        ],
+        max_tokens: 500,
+      }),
+    });
 
-      // Logika deteksi kata kunci untuk seputar kampus
-      if (text.includes("jadwal") || text.includes("kuliah")) {
-        botReply = "Jadwal kuliah semester ini sudah rilis. Kamu bisa melihatnya di menu 'Akademik'. Jangan lupa pastikan KRS kamu sudah disetujui dosen wali ya!";
-      } else if (text.includes("nilai") || text.includes("ipk") || text.includes("khs")) {
-        botReply = "Nilai KHS dan IPK terbaru akan otomatis ter-update setelah periode UAS selesai dan dosen menginput nilai ke sistem kampus.";
-      } else if (text.includes("bayar") || text.includes("ukt") || text.includes("spp")) {
-        botReply = "Status administrasi kamu tercatat aman. Bukti pembayaran UKT/SPP dapat diunduh di menu keuangan.";
-      } else if (text.includes("dosen") || text.includes("kontak")) {
-        botReply = "Kamu bisa mencari informasi dosen pengampu dan kontak konsultasi pada menu 'Data Dosen' di dashboard ini.";
-      } else if (text.includes("beasiswa")) {
-        botReply = "Pendaftaran beasiswa akan dibuka pada awal semester ganjil. Siapkan berkas-berkasnya dari sekarang, pantau terus pengumumannya!";
-      } else {
-        // Jawaban default kalau pertanyaannya di luar kata kunci
-        botReply = "Halo! Saya TechBot, asisten virtual TechNova. Ada yang bisa saya bantu terkait jadwal kuliah, nilai, atau administrasi kampus?";
-      }
+    const data = await response.json();
+    const botReply = data?.choices?.[0]?.message?.content
+      ?? 'Maaf, saya tidak bisa memproses pertanyaan kamu saat ini. Coba lagi ya!';
 
-      // Masukkan jawaban bot ke layar
-      setChatMessages(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);
-      setIsBotTyping(false);
-    }, 1500); // Jeda 1,5 detik biar terkesan AI beneran lagi mikir
-  };
+    setChatMessages(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);
+  } catch {
+    setChatMessages(prev => [
+      ...prev,
+      { id: Date.now(), text: 'Koneksi bermasalah. Pastikan API key Groq sudah terpasang.', sender: 'bot' },
+    ]);
+  } finally {
+    setIsBotTyping(false);
+  }
+};
 
   const userName = userEmail.split('@')[0];
   const userId = 'TN-' + userEmail.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
