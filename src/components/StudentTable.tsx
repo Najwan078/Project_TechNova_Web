@@ -81,10 +81,50 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       setActiveAlgo('merge');
       setLangkah(Math.ceil(students.length * Math.log2(students.length || 1)));
       if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Merge Sort (Semester).', 'success');
-    } else {
-      fetchStudents(`?sort=${type}`);
-      if (type === 'ipk') { setActiveAlgo('bubble'); if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Bubble Sort (IPK).', 'success'); }
-      else if (type === 'nim') { setActiveAlgo('selection'); if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Selection Sort (NIM).', 'success'); }
+      
+    } else if (type === 'ipk') {
+      // BUBBLE SORT LOKAL (Mencegah data hilang)
+      let dataCopy = [...students];
+      let steps = 0;
+      
+      for (let i = 0; i < dataCopy.length - 1; i++) {
+        for (let j = 0; j < dataCopy.length - i - 1; j++) {
+          steps++;
+          if (Number(dataCopy[j].ipk) < Number(dataCopy[j + 1].ipk)) {
+            let temp = dataCopy[j];
+            dataCopy[j] = dataCopy[j + 1];
+            dataCopy[j + 1] = temp;
+          }
+        }
+      }
+      setStudents(dataCopy);
+      setActiveAlgo('bubble');
+      setLangkah(steps);
+      if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Bubble Sort (IPK).', 'success');
+      
+    } else if (type === 'nim') {
+      // SELECTION SORT LOKAL (Mencegah data hilang)
+      let dataCopy = [...students];
+      let steps = 0;
+
+      for (let i = 0; i < dataCopy.length - 1; i++) {
+        let minIdx = i;
+        for (let j = i + 1; j < dataCopy.length; j++) {
+          steps++;
+          if (dataCopy[j].nim < dataCopy[minIdx].nim) {
+            minIdx = j;
+          }
+        }
+        if (minIdx !== i) {
+          let temp = dataCopy[i];
+          dataCopy[i] = dataCopy[minIdx];
+          dataCopy[minIdx] = temp;
+        }
+      }
+      setStudents(dataCopy);
+      setActiveAlgo('selection');
+      setLangkah(steps);
+      if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Selection Sort (NIM).', 'success');
     }
   };
 
