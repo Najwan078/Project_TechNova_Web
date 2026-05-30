@@ -95,6 +95,14 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   
   const accountRef = useRef<HTMLDivElement>(null);
 
+  // === STATE & FUNGSI UNTUK AGENDA KAMPUS DINAMIS ===
+  const [agendas, setAgendas] = useState([
+    { id: 1, title: 'Seminar Nasional AI & Web 3.0', date: '5 Juni 2026', loc: 'Auditorium Utama', type: 'Seminar', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
+    { id: 2, title: 'Pekan Olahraga Teknik (PORSENI)', date: '12 - 15 Juni 2026', loc: 'Lapangan Olahraga', type: 'Kegiatan', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+    { id: 3, title: 'Campus Hiring & Tech Job Fair', date: '20 Juni 2026', loc: 'Gedung Serbaguna', type: 'Karir', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+  ]);
+  const [newAgenda, setNewAgenda] = useState({ title: '', date: '', loc: '', type: 'Seminar' });
+
   useEffect(() => {
     const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail) setUserEmail(storedEmail);
@@ -168,7 +176,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   useEffect(() => {
     const currentActiveCount = students.filter(s => s.status === 'Aktif').length;
     
-    // Inisialisasi data awal
     setTrendData(prev => {
       if (prev.length === 0) {
         return Array.from({ length: 7 }).map((_, i) => {
@@ -224,6 +231,23 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         setIsSendingMsg(false);
       }, 1500);
     }
+  };
+
+  // === FUNGSI TAMBAH AGENDA ===
+  const handleAddAgenda = (e: React.FormEvent) => {
+    e.preventDefault();
+    let color = 'text-sky-400';
+    let bg = 'bg-sky-500/10 border-sky-500/20';
+    
+    if (newAgenda.type === 'Seminar') { color = 'text-purple-400'; bg = 'bg-purple-500/10 border-purple-500/20'; }
+    if (newAgenda.type === 'Kegiatan') { color = 'text-emerald-400'; bg = 'bg-emerald-500/10 border-emerald-500/20'; }
+    if (newAgenda.type === 'Karir') { color = 'text-amber-400'; bg = 'bg-amber-500/10 border-amber-500/20'; }
+    if (newAgenda.type === 'Penting') { color = 'text-rose-400'; bg = 'bg-rose-500/10 border-rose-500/20'; }
+
+    const agendaItem = { ...newAgenda, id: Date.now(), color, bg };
+    setAgendas([agendaItem, ...agendas]);
+    addNotification('Agenda Ditambahkan', `${newAgenda.title} berhasil diterbitkan.`, 'success');
+    setNewAgenda({ title: '', date: '', loc: '', type: 'Seminar' }); // Reset Form
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -584,7 +608,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                       </div>
                       <p className="text-xs text-slate-500 mb-6">Memonitor jumlah mahasiswa aktif secara langsung setiap 3 detik.</p>
                       
-                      {/* Area grafik ini akan melar ke bawah mengisi kekosongan */}
                       <div className="flex-1 w-full relative z-10 -ml-4 min-h-[180px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -632,19 +655,15 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                       <h3 className="font-[Outfit] font-semibold text-white text-xl flex items-center gap-2">
                         📢 <span className="group-hover:text-sky-400 transition-colors duration-300">Agenda Kampus</span>
                       </h3>
-                      <button className="text-sm px-4 py-2 bg-sky-400/10 text-sky-400 rounded-xl hover:bg-sky-400/20 hover:scale-105 transition-all flex items-center gap-2 font-medium">
+                      <button onClick={() => setActiveMenu('agenda')} className="text-sm px-4 py-2 bg-sky-400/10 text-sky-400 rounded-xl hover:bg-sky-400/20 hover:scale-105 transition-all flex items-center gap-2 font-medium">
                         Lihat Semua
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
                       </button>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                      {[
-                        { title: 'Seminar Nasional AI & Web 3.0', date: '5 Juni 2026', loc: 'Auditorium Utama', type: 'Seminar', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
-                        { title: 'Pekan Olahraga Teknik (PORSENI)', date: '12 - 15 Juni 2026', loc: 'Lapangan Olahraga', type: 'Kegiatan', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-                        { title: 'Campus Hiring & Tech Job Fair', date: '20 Juni 2026', loc: 'Gedung Serbaguna', type: 'Karir', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-                      ].map((info, idx) => (
-                        <div key={idx} className="flex flex-col gap-4 items-start p-6 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] hover:border-sky-400/30 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                      {agendas.slice(0, 3).map((info, idx) => (
+                        <div key={info.id || idx} className="flex flex-col gap-4 items-start p-6 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] hover:border-sky-400/30 transition-all duration-300 cursor-pointer hover:-translate-y-1">
                           <div className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${info.bg} ${info.color} whitespace-nowrap`}>
                             {info.type}
                           </div>
@@ -663,7 +682,107 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           </div>
                         </div>
                       ))}
+                      {agendas.length === 0 && <p className="text-slate-500 text-sm italic col-span-3 text-center py-6">Belum ada agenda kampus.</p>}
                     </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* === MENU BARU: MANAJEMEN AGENDA === */}
+            {activeMenu === 'agenda' && (
+              <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+                <div className="mb-6 flex justify-between items-end">
+                  <div>
+                    <h2 className="text-3xl font-bold font-[Outfit] text-white mb-2">Manajemen <span className="gradient-text">Agenda Kampus</span></h2>
+                    <p className="text-slate-400">Tambahkan dan kelola pengumuman kegiatan universitas</p>
+                  </div>
+                  <button onClick={() => setActiveMenu('beranda')} className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Kembali
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                  
+                  {/* Kolom Kiri: Form Tambah Agenda */}
+                  <div className="lg:col-span-1 glass rounded-3xl p-7 border border-white/[0.06] sticky top-6">
+                    <h3 className="text-xl font-bold font-[Outfit] text-white mb-5 flex items-center gap-2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan-400"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                      Tambah Agenda Baru
+                    </h3>
+                    
+                    <form onSubmit={handleAddAgenda} className="space-y-4">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Judul Kegiatan</label>
+                        <input type="text" required value={newAgenda.title} onChange={e => setNewAgenda({...newAgenda, title: e.target.value})} placeholder="Contoh: Kuliah Umum AI..." className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Tanggal Pelaksanaan</label>
+                        <input type="text" required value={newAgenda.date} onChange={e => setNewAgenda({...newAgenda, date: e.target.value})} placeholder="Contoh: 10 Juli 2026" className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Lokasi / Tempat</label>
+                        <input type="text" required value={newAgenda.loc} onChange={e => setNewAgenda({...newAgenda, loc: e.target.value})} placeholder="Contoh: Aula Gedung A" className="w-full px-4 py-3 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
+                        <select value={newAgenda.type} onChange={e => setNewAgenda({...newAgenda, type: e.target.value})} className="w-full px-4 py-3 bg-slate-900 border border-white/[0.08] rounded-xl text-white text-sm focus:outline-none focus:border-cyan-400/50 transition-all appearance-none cursor-pointer">
+                          <option value="Seminar">Seminar</option>
+                          <option value="Kegiatan">Kegiatan</option>
+                          <option value="Karir">Karir</option>
+                          <option value="Penting">Penting</option>
+                        </select>
+                      </div>
+                      <button type="submit" className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm hover:opacity-90 shadow-[0_0_15px_rgba(0,229,255,0.3)] transition-all duration-300">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Terbitkan Agenda
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Kolom Kanan: Daftar Seluruh Agenda */}
+                  <div className="lg:col-span-2 glass rounded-3xl p-7 border border-white/[0.06]">
+                     <h3 className="text-xl font-bold font-[Outfit] text-white mb-6 flex items-center gap-2">
+                        📋 Daftar Seluruh Agenda
+                     </h3>
+                     
+                     <div className="space-y-4">
+                       {agendas.map((info, idx) => (
+                         <div key={info.id || idx} className="flex flex-col sm:flex-row gap-5 items-start sm:items-center p-5 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 group">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className={`px-2.5 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider ${info.bg} ${info.color}`}>
+                                  {info.type}
+                                </div>
+                                <span className="text-xs text-slate-500 font-mono">ID: #{info.id || 'SYS'}</span>
+                              </div>
+                              <p className="text-lg font-semibold text-white mb-2 leading-tight group-hover:text-cyan-300 transition-colors">{info.title}</p>
+                              <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+                                <span className="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>{info.date}</span>
+                                <span className="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>{info.loc}</span>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => {
+                                setAgendas(agendas.filter(a => a.id !== info.id));
+                                addNotification('Agenda Dihapus', 'Agenda telah ditarik dari sistem.', 'info');
+                              }}
+                              className="shrink-0 w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all opacity-100 sm:opacity-0 group-hover:opacity-100"
+                              title="Hapus Agenda"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            </button>
+                         </div>
+                       ))}
+                       {agendas.length === 0 && (
+                         <div className="text-center py-10">
+                           <p className="text-slate-500 mb-1">Tidak ada agenda saat ini.</p>
+                           <p className="text-xs text-slate-600">Gunakan form di samping untuk menambahkan agenda baru.</p>
+                         </div>
+                       )}
+                     </div>
                   </div>
                 </div>
               </div>
