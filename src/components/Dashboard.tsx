@@ -168,7 +168,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   useEffect(() => {
     const currentActiveCount = students.filter(s => s.status === 'Aktif').length;
     
-    // Inisialisasi data awal biar grafiknya nggak kosong saat baru dibuka
+    // Inisialisasi data awal
     setTrendData(prev => {
       if (prev.length === 0) {
         return Array.from({ length: 7 }).map((_, i) => {
@@ -182,19 +182,18 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       return prev;
     });
 
-    // Menjalankan fungsi penambah titik grafik setiap 3 detik
     const interval = setInterval(() => {
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
       
       setTrendData(prev => {
         const newData = [...prev, { time: timeStr, active: currentActiveCount }];
-        return newData.slice(-7); // Hapus data lama, biar grafiknya bergerak ke kanan!
+        return newData.slice(-7); 
       });
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [students]); // Auto-update kalau jumlah mahasiswa aktif di tabel berubah
+  }, [students]); 
 
   const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -500,7 +499,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-start">
                   
                   {/* Kolom Kiri: Donut Chart + Realtime Chart */}
-                  <div className="flex flex-col gap-6 w-full">
+                  <div className="flex flex-col gap-6 w-full h-full">
                     {/* === KOTAK TARGET MAHASISWA (UI DONAT RECHARTS) === */}
                     <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group h-fit">
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
@@ -529,6 +528,8 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                                   ))}
                                 </Pie>
                                 <Tooltip 
+                                  offset={40}
+                                  allowEscapeViewBox={{ x: true, y: true }}
                                   contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
                                   itemStyle={{ color: '#fff', fontWeight: 'bold' }}
                                   cursor={{fill: 'transparent'}}
@@ -571,7 +572,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                     </div>
 
                     {/* === KOTAK GRAFIK KARTESIUS REAL-TIME === */}
-                    <div className="glass rounded-3xl p-6 border border-white/[0.06] relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 h-fit shadow-[0_15px_40px_-10px_rgba(16,185,129,0.1)]">
+                    <div className="glass rounded-3xl p-6 border border-white/[0.06] relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 flex-1 flex flex-col shadow-[0_15px_40px_-10px_rgba(16,185,129,0.1)]">
                       <div className="flex items-center justify-between mb-2 relative z-10">
                         <h3 className="font-[Outfit] font-semibold text-white text-lg flex items-center gap-2">
                           📈 <span className="group-hover:text-emerald-400 transition-colors duration-300">Live Tracker Aktif</span>
@@ -583,7 +584,8 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                       </div>
                       <p className="text-xs text-slate-500 mb-6">Memonitor jumlah mahasiswa aktif secara langsung setiap 3 detik.</p>
                       
-                      <div className="h-44 w-full relative z-10 -ml-4">
+                      {/* Area grafik ini akan melar ke bawah mengisi kekosongan */}
+                      <div className="flex-1 w-full relative z-10 -ml-4 min-h-[180px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
