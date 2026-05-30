@@ -152,15 +152,13 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const totalMhs = students.length;
   const aktifMhs = students.filter(s => s.status === 'Aktif').length;
   const lulusMhs = students.filter(s => s.status === 'Lulus').length;
-  const sisaMhs = totalMhs - aktifMhs - lulusMhs;
   
   const aktifPersen = totalMhs === 0 ? 0 : Math.round((aktifMhs / totalMhs) * 100);
 
-  // Menyaring data hanya yang nilainya > 0 agar diagram tampil rapi
+  // Menyaring data hanya yang nilainya > 0 agar diagram tampil rapi (Tanpa warna ungu/lainnya)
   const chartData = [
     { name: 'Aktif', value: aktifMhs, color: '#10b981' }, // emerald-500
-    { name: 'Lulus', value: lulusMhs, color: '#f59e0b' }, // amber-500
-    { name: 'Lainnya (Cuti/DO)', value: sisaMhs, color: '#6366f1' } // indigo-500
+    { name: 'Lulus', value: lulusMhs, color: '#f59e0b' }  // amber-500
   ].filter(item => item.value > 0);
 
   // Default data jika kosong (biar lingkaran abu-abu tampil)
@@ -467,27 +465,27 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                   ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-start">
                   
                   {/* === KOTAK TARGET MAHASISWA (UI DONAT RECHARTS) === */}
-                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group flex flex-col justify-center">
+                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group h-fit">
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                     <div className="relative z-10">
                       <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
                         📊 <span className="group-hover:text-cyan-400 transition-colors duration-300">Target Mahasiswa</span>
                       </h3>
                       
-                      <div className="flex flex-col sm:flex-row items-center gap-8">
-                        {/* Kiri: Diagram Donat Recharts */}
-                        <div className="relative w-40 h-40 flex-shrink-0 flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-8">
+                        {/* Atas: Diagram Donat */}
+                        <div className="relative w-48 h-48 flex-shrink-0 flex items-center justify-center">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
                                 data={chartData.length > 0 ? chartData : defaultChartData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={50}
-                                outerRadius={75}
+                                innerRadius={65}
+                                outerRadius={90}
                                 paddingAngle={5}
                                 dataKey="value"
                                 stroke="none"
@@ -505,43 +503,38 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           </ResponsiveContainer>
                           {/* Teks Persentase di Tengah Donat */}
                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-3xl font-bold text-white leading-none">{aktifPersen}%</span>
-                            <span className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Aktif</span>
+                            <span className="text-4xl font-bold text-white leading-none mb-1">{aktifPersen}%</span>
+                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">AKTIF</span>
                           </div>
                         </div>
 
-                        {/* Kanan: Kotak Statistik */}
-                        <div className="flex-1 grid grid-cols-1 gap-3 w-full">
+                        {/* Bawah: Kotak Statistik Sejajar */}
+                        <div className="grid grid-cols-3 gap-3 w-full">
                           
-                          <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3.5 transition-all hover:bg-white/[0.06] flex items-center justify-between group/card">
-                            <div>
-                              <p className="text-[10px] text-slate-400 font-bold mb-1 tracking-wider group-hover/card:text-cyan-400 transition-colors">TOTAL MAHASISWA</p>
-                              <div className="flex items-end gap-2">
-                                <span className="text-2xl font-bold text-white leading-none">{totalMhs}</span>
-                                <span className="text-xs text-slate-500 mb-0.5">/ 50 Target</span>
-                              </div>
+                          <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 transition-all hover:bg-white/[0.06] flex flex-col items-center text-center justify-center group/card">
+                            <p className="text-[9px] text-slate-400 font-bold mb-1.5 tracking-wider group-hover/card:text-cyan-400 transition-colors uppercase">TOTAL</p>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xl font-bold text-white leading-none">{totalMhs}</span>
+                              <span className="text-[10px] text-slate-500 font-medium">/ 50</span>
                             </div>
                           </div>
 
-                          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3.5 transition-all hover:bg-emerald-500/10 flex items-center justify-between group/card">
-                            <div>
-                              <p className="text-[10px] text-emerald-500/80 font-bold mb-1 tracking-wider group-hover/card:text-emerald-400 transition-colors">MAHASISWA AKTIF</p>
-                              <div className="flex items-end gap-2">
-                                <span className="text-2xl font-bold text-emerald-400 leading-none">{aktifMhs}</span>
-                                <span className="text-xs text-emerald-500/50 mb-0.5">/ {totalMhs || 1} Target</span>
-                              </div>
+                          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 transition-all hover:bg-emerald-500/10 flex flex-col items-center text-center justify-center group/card">
+                            <p className="text-[9px] text-emerald-500/80 font-bold mb-1.5 tracking-wider group-hover/card:text-emerald-400 transition-colors uppercase">AKTIF</p>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xl font-bold text-emerald-400 leading-none">{aktifMhs}</span>
+                              <span className="text-[10px] text-emerald-500/50 font-medium">/ {totalMhs || 1}</span>
                             </div>
                           </div>
 
-                          <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 transition-all hover:bg-amber-500/10 flex items-center justify-between group/card">
-                            <div>
-                              <p className="text-[10px] text-amber-500/80 font-bold mb-1 tracking-wider group-hover/card:text-amber-400 transition-colors">MAHASISWA LULUS</p>
-                              <div className="flex items-end gap-2">
-                                <span className="text-2xl font-bold text-amber-400 leading-none">{lulusMhs}</span>
-                                <span className="text-xs text-amber-500/50 mb-0.5">/ {totalMhs || 1} Target</span>
-                              </div>
+                          <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 transition-all hover:bg-amber-500/10 flex flex-col items-center text-center justify-center group/card">
+                            <p className="text-[9px] text-amber-500/80 font-bold mb-1.5 tracking-wider group-hover/card:text-amber-400 transition-colors uppercase">LULUS</p>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xl font-bold text-amber-400 leading-none">{lulusMhs}</span>
+                              <span className="text-[10px] text-amber-500/50 font-medium">/ {totalMhs || 1}</span>
                             </div>
                           </div>
+
                         </div>
                       </div>
                     </div>
