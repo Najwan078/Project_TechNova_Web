@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import BackgroundOrbs from './BackgroundOrbs';
 import Sidebar from './Sidebar';
 import StudentTable from './StudentTable';
@@ -62,7 +63,6 @@ interface StudentData {
   ipk: number;
 }
 
-// === INTERFACE UNTUK CHATBOT ===
 interface ChatMessage {
   id: number;
   text: string;
@@ -80,13 +80,11 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   
-  // STATE UNTUK LOADING LOGOUT & FITUR CONTACT US
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSendingMsg, setIsSendingMsg] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  // === STATE UNTUK CHATBOT AI ===
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
@@ -113,7 +111,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // === AUTO SCROLL CHATBOT ===
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -150,6 +147,24 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const animatedAktif = useCountUp(students.filter(s => s.status === 'Aktif').length);
   const animatedLulus = useCountUp(students.filter(s => s.status === 'Lulus').length);
   const animatedIpk = useCountUpFloat(students.length > 0 ? parseFloat((students.reduce((a, b) => a + Number(b.ipk), 0) / students.length).toFixed(2)) : 0);
+
+  // === DATA UNTUK RECHARTS DONUT ===
+  const totalMhs = students.length;
+  const aktifMhs = students.filter(s => s.status === 'Aktif').length;
+  const lulusMhs = students.filter(s => s.status === 'Lulus').length;
+  const sisaMhs = totalMhs - aktifMhs - lulusMhs;
+  
+  const aktifPersen = totalMhs === 0 ? 0 : Math.round((aktifMhs / totalMhs) * 100);
+
+  // Menyaring data hanya yang nilainya > 0 agar diagram tampil rapi
+  const chartData = [
+    { name: 'Aktif', value: aktifMhs, color: '#10b981' }, // emerald-500
+    { name: 'Lulus', value: lulusMhs, color: '#f59e0b' }, // amber-500
+    { name: 'Lainnya (Cuti/DO)', value: sisaMhs, color: '#6366f1' } // indigo-500
+  ].filter(item => item.value > 0);
+
+  // Default data jika kosong (biar lingkaran abu-abu tampil)
+  const defaultChartData = [{ name: 'Belum Ada Data', value: 1, color: '#334155' }];
 
   const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -198,49 +213,49 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   };
 
   const handleChatSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!chatInput.trim()) return;
+    e.preventDefault();
+    if (!chatInput.trim()) return;
 
-  const userText = chatInput.trim();
-  setChatMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
-  setChatInput('');
-  setIsBotTyping(true);
+    const userText = chatInput.trim();
+    setChatMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
+    setChatInput('');
+    setIsBotTyping(true);
 
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.
 Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan administrasi kampus secara ramah dan ringkas dalam Bahasa Indonesia.`,
-          },
-          { role: 'user', content: userText },
-        ],
-        max_tokens: 500,
-      }),
-    });
+            },
+            { role: 'user', content: userText },
+          ],
+          max_tokens: 500,
+        }),
+      });
 
-    const data = await response.json();
-    const botReply = data?.choices?.[0]?.message?.content
-      ?? 'Maaf, saya tidak bisa memproses pertanyaan kamu saat ini. Coba lagi ya!';
+      const data = await response.json();
+      const botReply = data?.choices?.[0]?.message?.content
+        ?? 'Maaf, saya tidak bisa memproses pertanyaan kamu saat ini. Coba lagi ya!';
 
-    setChatMessages(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);
-  } catch {
-    setChatMessages(prev => [
-      ...prev,
-      { id: Date.now(), text: 'Koneksi bermasalah. Pastikan API key Groq sudah terpasang.', sender: 'bot' },
-    ]);
-  } finally {
-    setIsBotTyping(false);
-  }
-};
+      setChatMessages(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);
+    } catch {
+      setChatMessages(prev => [
+        ...prev,
+        { id: Date.now(), text: 'Koneksi bermasalah. Pastikan API key Groq sudah terpasang.', sender: 'bot' },
+      ]);
+    } finally {
+      setIsBotTyping(false);
+    }
+  };
 
   const userName = userEmail.split('@')[0];
   const userId = 'TN-' + userEmail.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -453,31 +468,81 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group">
+                  
+                  {/* === KOTAK TARGET MAHASISWA (UI DONAT RECHARTS) === */}
+                  <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group flex flex-col justify-center">
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                     <div className="relative z-10">
                       <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
                         📊 <span className="group-hover:text-cyan-400 transition-colors duration-300">Target Mahasiswa</span>
                       </h3>
-                      <div className="space-y-6">
-                        {[
-                          { label: 'Total Mahasiswa', value: students.length, target: 50, color: 'bg-cyan-400', glow: 'shadow-cyan-400/50' },
-                          { label: 'Mahasiswa Aktif', value: students.filter(s => s.status === 'Aktif').length, target: students.length || 1, color: 'bg-emerald-400', glow: 'shadow-emerald-400/50' },
-                          { label: 'Mahasiswa Lulus', value: students.filter(s => s.status === 'Lulus').length, target: students.length || 1, color: 'bg-amber-400', glow: 'shadow-amber-400/50' },
-                        ].map((item) => {
-                          const pct = Math.min(100, Math.round((item.value / item.target) * 100));
-                          return (
-                            <div key={item.label} className="group/bar">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm text-slate-300 font-medium group-hover/bar:text-white transition-colors">{item.label}</span>
-                                <span className="text-xs text-slate-400">{item.value} / {item.target} <span className={`font-bold ${item.color.replace('bg-', 'text-')}`}>({pct}%)</span></span>
-                              </div>
-                              <div className="h-2.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.02]">
-                                <div className={`h-full rounded-full ${item.color} shadow-lg ${item.glow} transition-all duration-1000 ease-out`} style={{ width: `${pct}%` }} />
+                      
+                      <div className="flex flex-col sm:flex-row items-center gap-8">
+                        {/* Kiri: Diagram Donat Recharts */}
+                        <div className="relative w-40 h-40 flex-shrink-0 flex items-center justify-center">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={chartData.length > 0 ? chartData : defaultChartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={50}
+                                outerRadius={75}
+                                paddingAngle={5}
+                                dataKey="value"
+                                stroke="none"
+                              >
+                                {(chartData.length > 0 ? chartData : defaultChartData).map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip 
+                                contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                                itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                                cursor={{fill: 'transparent'}}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          {/* Teks Persentase di Tengah Donat */}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-3xl font-bold text-white leading-none">{aktifPersen}%</span>
+                            <span className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Aktif</span>
+                          </div>
+                        </div>
+
+                        {/* Kanan: Kotak Statistik */}
+                        <div className="flex-1 grid grid-cols-1 gap-3 w-full">
+                          
+                          <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3.5 transition-all hover:bg-white/[0.06] flex items-center justify-between group/card">
+                            <div>
+                              <p className="text-[10px] text-slate-400 font-bold mb-1 tracking-wider group-hover/card:text-cyan-400 transition-colors">TOTAL MAHASISWA</p>
+                              <div className="flex items-end gap-2">
+                                <span className="text-2xl font-bold text-white leading-none">{totalMhs}</span>
+                                <span className="text-xs text-slate-500 mb-0.5">/ 50 Target</span>
                               </div>
                             </div>
-                          );
-                        })}
+                          </div>
+
+                          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3.5 transition-all hover:bg-emerald-500/10 flex items-center justify-between group/card">
+                            <div>
+                              <p className="text-[10px] text-emerald-500/80 font-bold mb-1 tracking-wider group-hover/card:text-emerald-400 transition-colors">MAHASISWA AKTIF</p>
+                              <div className="flex items-end gap-2">
+                                <span className="text-2xl font-bold text-emerald-400 leading-none">{aktifMhs}</span>
+                                <span className="text-xs text-emerald-500/50 mb-0.5">/ {totalMhs || 1} Target</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 transition-all hover:bg-amber-500/10 flex items-center justify-between group/card">
+                            <div>
+                              <p className="text-[10px] text-amber-500/80 font-bold mb-1 tracking-wider group-hover/card:text-amber-400 transition-colors">MAHASISWA LULUS</p>
+                              <div className="flex items-end gap-2">
+                                <span className="text-2xl font-bold text-amber-400 leading-none">{lulusMhs}</span>
+                                <span className="text-xs text-amber-500/50 mb-0.5">/ {totalMhs || 1} Target</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
