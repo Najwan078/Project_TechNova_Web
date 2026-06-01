@@ -1086,10 +1086,10 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </main>
 
         {/* --- FLOATING CHATBOT AI --- */}
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
           
           {/* Chat Window */}
-          <div className={`transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 translate-y-0 mb-4' : 'scale-0 opacity-0 translate-y-10 mb-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
+          <div className={`pointer-events-auto transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 translate-y-0 mb-4' : 'scale-0 opacity-0 translate-y-10 mb-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
             
             {/* Header Chat */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-b border-cyan-400/20 px-4 py-3 flex items-center justify-between backdrop-blur-md">
@@ -1153,7 +1153,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           {/* Tombol Floating Action Button (FAB) */}
           <button 
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 z-50 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
+              className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 z-50 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
           >
             {isChatOpen ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
