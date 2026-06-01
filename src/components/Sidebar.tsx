@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import logoKampus from '../assets/Logo_Technova_University.png';
 
 interface SidebarProps {

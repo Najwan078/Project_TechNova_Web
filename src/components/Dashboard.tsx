@@ -3,7 +3,6 @@ import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import BackgroundOrbs from './BackgroundOrbs';
 import Sidebar from './Sidebar';
 import StudentTable from './StudentTable';
-import UserAvatar from './UserAvatar';
 import AcademicCalendar from './AkademikKalender';
 import logoKampus from '../assets/Logo_Technova_University.png';
 import imgGedung from '../assets/Gedung Utama.png';
@@ -286,8 +285,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           messages: [
             {
               role: 'system',
-              content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.
-Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan administrasi kampus secara ramah dan ringkas dalam Bahasa Indonesia.`,
+              content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan administrasi kampus secara ramah dan ringkas dalam Bahasa Indonesia.`,
             },
             { role: 'user', content: userText },
           ],
