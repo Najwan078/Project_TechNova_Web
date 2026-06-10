@@ -10,6 +10,14 @@ interface StudentTableProps {
 
 import { Student } from '../data/students';
 
+// Spinner kecil reusable
+const Spinner = ({ color = 'text-current' }: { color?: string }) => (
+  <svg className={`animate-spin h-4 w-4 ${color}`} viewBox="0 0 24 24" fill="none">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+  </svg>
+);
+
 export default function StudentTable({ onNotify }: StudentTableProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState('');
@@ -22,6 +30,16 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [editForm, setEditForm] = useState<Record<string, any>>({});
   const importRef = useRef<HTMLInputElement>(null);
+
+  // === STATE LOADING PER TOMBOL ===
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSortingIpk, setIsSortingIpk] = useState(false);
+  const [isSortingNim, setIsSortingNim] = useState(false);
+  const [isSortingSemester, setIsSortingSemester] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const fetchStudents = (params = '') => {
     setLoading(true);
@@ -46,13 +64,16 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
   useEffect(() => { fetchStudents(); }, []);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    setIsSearching(true);
+    await new Promise(r => setTimeout(r, 600));
     fetchStudents(`?q=${search}&search_type=${searchType}`);
     let algoName = '';
     if (searchType === 'nama') { setActiveAlgo('linear'); algoName = 'Linear Search'; }
     else if (searchType === 'nim') { setActiveAlgo('binary'); algoName = 'Binary Search'; }
     else if (searchType === 'jurusan') { setActiveAlgo('sequential'); algoName = 'Sequential Search'; }
     if (onNotify) onNotify('Pencarian Selesai', `Algoritma ${algoName} berhasil mengeksekusi pencarian data.`, 'info');
+    setTimeout(() => setIsSearching(false), 800);
   };
 
   const merge = (left: Student[], right: Student[]) => {
@@ -74,19 +95,23 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     return merge(mergeSort(data.slice(0, mid)), mergeSort(data.slice(mid)));
   };
 
-  const handleSort = (type: 'ipk' | 'nim' | 'semester') => {
+  const handleSort = async (type: 'ipk' | 'nim' | 'semester') => {
+    if (type === 'ipk') setIsSortingIpk(true);
+    else if (type === 'nim') setIsSortingNim(true);
+    else setIsSortingSemester(true);
+
+    await new Promise(r => setTimeout(r, 700));
+
     if (type === 'semester') {
       const sortedData = mergeSort([...students]);
       setStudents(sortedData);
       setActiveAlgo('merge');
       setLangkah(Math.ceil(students.length * Math.log2(students.length || 1)));
       if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Merge Sort (Semester).', 'success');
-      
+      setIsSortingSemester(false);
     } else if (type === 'ipk') {
-      // BUBBLE SORT LOKAL (Mencegah data hilang)
       let dataCopy = [...students];
       let steps = 0;
-      
       for (let i = 0; i < dataCopy.length - 1; i++) {
         for (let j = 0; j < dataCopy.length - i - 1; j++) {
           steps++;
@@ -101,19 +126,15 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       setActiveAlgo('bubble');
       setLangkah(steps);
       if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Bubble Sort (IPK).', 'success');
-      
+      setIsSortingIpk(false);
     } else if (type === 'nim') {
-      // SELECTION SORT LOKAL (Mencegah data hilang)
       let dataCopy = [...students];
       let steps = 0;
-
       for (let i = 0; i < dataCopy.length - 1; i++) {
         let minIdx = i;
         for (let j = i + 1; j < dataCopy.length; j++) {
           steps++;
-          if (dataCopy[j].nim < dataCopy[minIdx].nim) {
-            minIdx = j;
-          }
+          if (dataCopy[j].nim < dataCopy[minIdx].nim) minIdx = j;
         }
         if (minIdx !== i) {
           let temp = dataCopy[i];
@@ -125,6 +146,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       setActiveAlgo('selection');
       setLangkah(steps);
       if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Selection Sort (NIM).', 'success');
+      setIsSortingNim(false);
     }
   };
 
@@ -136,6 +158,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
   const handleEditSave = async () => {
     if (!editStudent) return;
+    setIsSavingEdit(true);
     try {
       const res = await fetch(`${API_URL}/api/mahasiswa/${editStudent.nim}`, {
         method: 'PUT',
@@ -143,6 +166,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         body: JSON.stringify(editForm),
       });
       const data = await res.json();
+      await new Promise(r => setTimeout(r, 500));
       if (data.status === 'success') {
         if (onNotify) onNotify('Berhasil', 'Data mahasiswa berhasil diupdate!', 'success');
         setEditStudent(null);
@@ -152,13 +176,17 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       }
     } catch {
       if (onNotify) onNotify('Error', 'Gagal menghubungi server.', 'warning');
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
   const handleExport = async () => {
+    setIsExporting(true);
     try {
       const res = await fetch(`${API_URL}/api/mahasiswa/export`);
       const data = await res.json();
+      await new Promise(r => setTimeout(r, 600));
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -169,16 +197,20 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       if (onNotify) onNotify('Export Berhasil', 'Data mahasiswa berhasil diexport ke JSON.', 'success');
     } catch {
       if (onNotify) onNotify('Export Gagal', 'Gagal mengexport data.', 'warning');
+    } finally {
+      setIsExporting(false);
     }
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setIsImporting(true);
     const reader = new FileReader();
     reader.onload = async (ev) => {
       try {
         const parsed = JSON.parse(ev.target?.result as string);
+        await new Promise(r => setTimeout(r, 600));
         const res = await fetch(`${API_URL}/api/mahasiswa/import`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -193,10 +225,22 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         }
       } catch {
         if (onNotify) onNotify('Import Gagal', 'File JSON tidak valid.', 'warning');
+      } finally {
+        setIsImporting(false);
       }
     };
     reader.readAsText(file);
     e.target.value = '';
+  };
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    await new Promise(r => setTimeout(r, 700));
+    fetchStudents();
+    setSearch('');
+    setActiveAlgo('');
+    setLangkah(0);
+    setTimeout(() => setIsResetting(false), 800);
   };
 
   const getIpkColor = (ipk: number) => {
@@ -231,44 +275,151 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     <div style={{ animation: 'fadeInUp 0.6s ease-out' }}>
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
         <div className="relative flex-1 flex gap-2">
-        <select value={searchType} onChange={(e) => setSearchType(e.target.value)} className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-3 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer"
-        >
-          <option value="nama" className="bg-[#0a0a20] text-white">Nama (Linear)</option>
-          <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
-          <option value="jurusan" className="bg-[#0a0a20] text-white">Jurusan (Sequential)</option>
-        </select>
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} placeholder="Ketik nama, NIM, atau jurusan..." className="w-full min-w-[200px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-4 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50" />
-          <button onClick={handleSearch} className="px-6 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all font-medium text-sm">Cari</button>
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value)}
+            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-3 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer"
+          >
+            <option value="nama" className="bg-[#0a0a20] text-white">Nama (Linear)</option>
+            <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
+            <option value="jurusan" className="bg-[#0a0a20] text-white">Jurusan (Sequential)</option>
+          </select>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !isSearching && handleSearch()}
+            placeholder="Ketik nama, NIM, atau jurusan..."
+            className="w-full min-w-[200px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-4 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50"
+          />
+          {/* TOMBOL CARI */}
+          <button
+            onClick={handleSearch}
+            disabled={isSearching}
+            className="px-6 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all font-medium text-sm disabled:opacity-70 flex items-center gap-2 min-w-[90px] justify-center"
+          >
+            {isSearching ? (
+              <>
+                <Spinner />
+                <span>Cari...</span>
+              </>
+            ) : 'Cari'}
+          </button>
         </div>
-        
-        {/* INI BAGIAN TOMBOL-TOMBOL YANG SUDAH DIUBAH JADI IKON */}
+
         <div className="flex gap-2 flex-wrap items-center">
-          {/* Tombol Sort IPK (Bubble) */}
-          <button onClick={() => handleSort('ipk')} className="relative p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(251,191,36,0.05)] hover:shadow-[0_0_20px_rgba(251,191,36,0.15)]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">Bubble Sort (IPK)<span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-amber-500/30"></span></span>
+          {/* TOMBOL BUBBLE SORT (IPK) */}
+          <button
+            onClick={() => handleSort('ipk')}
+            disabled={isSortingIpk}
+            className="relative p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(251,191,36,0.05)] hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] disabled:opacity-70 w-10 h-10"
+          >
+            {isSortingIpk ? (
+              <Spinner color="text-amber-400" />
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
+              Bubble Sort (IPK)
+              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-amber-500/30"></span>
+            </span>
           </button>
 
-          {/* Tombol Sort NIM (Selection) */}
-          <button onClick={() => handleSort('nim')} className="relative p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.15)]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/></svg>
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-rose-500/30 text-rose-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">Selection Sort (NIM)<span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-rose-500/30"></span></span>
+          {/* TOMBOL SELECTION SORT (NIM) */}
+          <button
+            onClick={() => handleSort('nim')}
+            disabled={isSortingNim}
+            className="relative p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.15)] disabled:opacity-70 w-10 h-10"
+          >
+            {isSortingNim ? (
+              <Spinner color="text-rose-400" />
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>
+                <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+                <line x1="20" y1="12" x2="22" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/>
+              </svg>
+            )}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-rose-500/30 text-rose-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
+              Selection Sort (NIM)
+              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-rose-500/30"></span>
+            </span>
           </button>
 
-          {/* Tombol Sort Semester (Merge) */}
-          <button onClick={() => handleSort('semester')} className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">Merge Sort (Semester)<span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-purple-500/30"></span></span>
+          {/* TOMBOL MERGE SORT (SEMESTER) */}
+          <button
+            onClick={() => handleSort('semester')}
+            disabled={isSortingSemester}
+            className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] disabled:opacity-70 w-10 h-10"
+          >
+            {isSortingSemester ? (
+              <Spinner color="text-purple-400" />
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+              </svg>
+            )}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
+              Merge Sort (Semester)
+              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-purple-500/30"></span>
+            </span>
           </button>
 
-          <div className="w-px h-8 bg-white/[0.08] mx-1"></div> {/* Garis Pemisah */}
+          <div className="w-px h-8 bg-white/[0.08] mx-1" />
 
-          {/* Tombol Lainnya (Tetap dengan teks) */}
-          <button onClick={() => setIsAddModalOpen(true)} className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium">+ Tambah</button>
-          <button onClick={handleExport} className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm">⬇ Export JSON</button>
-          <button onClick={() => importRef.current?.click()} className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm">⬆ Import JSON</button>
+          {/* TOMBOL TAMBAH */}
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium"
+          >
+            + Tambah
+          </button>
+
+          {/* TOMBOL EXPORT */}
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+          >
+            {isExporting ? (
+              <>
+                <Spinner color="text-blue-400" />
+                <span>Exporting...</span>
+              </>
+            ) : '⬇ Export JSON'}
+          </button>
+
+          {/* TOMBOL IMPORT */}
+          <button
+            onClick={() => importRef.current?.click()}
+            disabled={isImporting}
+            className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+          >
+            {isImporting ? (
+              <>
+                <Spinner color="text-violet-400" />
+                <span>Importing...</span>
+              </>
+            ) : '⬆ Import JSON'}
+          </button>
           <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
-          <button onClick={() => fetchStudents()} className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm">Reset</button>
+
+          {/* TOMBOL RESET */}
+          <button
+            onClick={handleReset}
+            disabled={isResetting}
+            className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center"
+          >
+            {isResetting ? (
+              <>
+                <Spinner color="text-slate-400" />
+                <span>Reset...</span>
+              </>
+            ) : 'Reset'}
+          </button>
         </div>
       </div>
 
@@ -310,17 +461,33 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             ) : students.length === 0
               ? <tr><td colSpan={6} className="text-center py-10 text-slate-500 italic">Data tidak tersedia.</td></tr>
               : students.map((student) => (
-                <tr key={student.nim} onClick={() => setSelectedStudent(student)} className="hover:bg-white/[0.03] cursor-pointer border-b border-white/[0.03]" style={{ animation: 'fadeInUp 0.3s ease-out both' }}>
+                <tr
+                  key={student.nim}
+                  onClick={() => setSelectedStudent(student)}
+                  className="hover:bg-white/[0.03] cursor-pointer border-b border-white/[0.03]"
+                  style={{ animation: 'fadeInUp 0.3s ease-out both' }}
+                >
                   <td className="px-6 py-4 text-sm text-cyan-400">{student.nim}</td>
                   <td className="px-6 py-4 text-sm text-white flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs flex-shrink-0">{student.nama?.charAt(0) ?? '?'}</div>
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs flex-shrink-0">
+                      {student.nama?.charAt(0) ?? '?'}
+                    </div>
                     {student.nama}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-400">{student.jurusan}</td>
                   <td className={`px-6 py-4 text-sm font-bold ${getIpkColor(student.ipk)}`}>{Number(student.ipk).toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm"><span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${getStatusBadge(student.status)}`}>{student.status}</span></td>
                   <td className="px-6 py-4 text-sm">
-                    <button onClick={(e) => handleEditClick(e, student)} className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg hover:bg-cyan-500/20 transition-all text-xs">✏ Edit</button>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${getStatusBadge(student.status)}`}>
+                      {student.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <button
+                      onClick={(e) => handleEditClick(e, student)}
+                      className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg hover:bg-cyan-500/20 transition-all text-xs"
+                    >
+                      ✏ Edit
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -328,14 +495,25 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </table>
       </div>
 
+      {/* MODAL EDIT — tombol Simpan dengan loading state */}
       {editStudent && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setEditStudent(null)}>
-          <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => !isSavingEdit && setEditStudent(null)}
+        >
+          <div
+            className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4"
+            onClick={e => e.stopPropagation()}
+          >
             <h2 className="text-white font-bold text-lg mb-4">✏ Edit Mahasiswa</h2>
             <div className="space-y-3">
               <div>
                 <label className="text-slate-400 text-xs mb-1 block">NIM (tidak bisa diubah)</label>
-                <input value={editStudent.nim} disabled className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-slate-500 text-sm" />
+                <input
+                  value={editStudent.nim}
+                  disabled
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-slate-500 text-sm"
+                />
               </div>
               {(['nama', 'jurusan', 'semester', 'ipk'] as const).map(field => (
                 <div key={field}>
@@ -343,7 +521,8 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                   <input
                     value={editForm[field] ?? ''}
                     onChange={e => setEditForm((f: Record<string, any>) => ({ ...f, [field]: e.target.value }))}
-                    className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-cyan-400/50"
+                    disabled={isSavingEdit}
+                    className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-cyan-400/50 disabled:opacity-60"
                   />
                 </div>
               ))}
@@ -352,7 +531,8 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                 <select
                   value={editForm['status'] ?? ''}
                   onChange={e => setEditForm((f: Record<string, any>) => ({ ...f, status: e.target.value }))}
-                  className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none"
+                  disabled={isSavingEdit}
+                  className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none disabled:opacity-60"
                 >
                   <option value="Aktif">Aktif</option>
                   <option value="Cuti">Cuti</option>
@@ -362,8 +542,25 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setEditStudent(null)} className="flex-1 px-4 py-2 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm">Batal</button>
-              <button onClick={handleEditSave} className="flex-1 px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all text-sm font-medium">Simpan</button>
+              <button
+                onClick={() => setEditStudent(null)}
+                disabled={isSavingEdit}
+                className="flex-1 px-4 py-2 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleEditSave}
+                disabled={isSavingEdit}
+                className="flex-1 px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all text-sm font-medium disabled:opacity-70 flex items-center justify-center gap-2"
+              >
+                {isSavingEdit ? (
+                  <>
+                    <Spinner color="text-cyan-400" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : 'Simpan'}
+              </button>
             </div>
           </div>
         </div>
@@ -390,7 +587,11 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             <div className="glass rounded-xl p-5">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Time Complexity</p>
               <div className="space-y-3">
-                {[{ label: 'Best Case', value: activeDetails.best ?? activeDetails.time, color: 'text-emerald-400' }, { label: 'Average Case', value: activeDetails.time, color: activeDetails.color }, { label: 'Worst Case', value: activeDetails.worst ?? activeDetails.time, color: 'text-rose-400' }].map(({ label, value, color }) => (
+                {[
+                  { label: 'Best Case', value: activeDetails.best ?? activeDetails.time, color: 'text-emerald-400' },
+                  { label: 'Average Case', value: activeDetails.time, color: activeDetails.color },
+                  { label: 'Worst Case', value: activeDetails.worst ?? activeDetails.time, color: 'text-rose-400' }
+                ].map(({ label, value, color }) => (
                   <div key={label} className="flex items-center justify-between">
                     <span className="text-slate-400 text-xs">{label}</span>
                     <span className={`font-mono font-bold text-sm px-2 py-0.5 rounded-lg bg-white/[0.04] ${color}`}>{value}</span>
@@ -425,7 +626,10 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                         <span className="font-mono text-[10px] text-slate-500">{item.time}</span>
                       </div>
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all duration-700 ${item.name === activeDetails.title ? activeDetails.color.replace('text-', 'bg-') : 'bg-slate-600'}`} style={{ width: `${item.score}%` }} />
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${item.name === activeDetails.title ? activeDetails.color.replace('text-', 'bg-') : 'bg-slate-600'}`}
+                          style={{ width: `${item.score}%` }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -437,7 +641,13 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       )}
 
       {selectedStudent && <StudentModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />}
-      {isAddModalOpen && <AddStudentModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onRefresh={() => { fetchStudents(); setIsAddModalOpen(false); }} />}
+      {isAddModalOpen && (
+        <AddStudentModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onRefresh={() => { fetchStudents(); setIsAddModalOpen(false); }}
+        />
+      )}
     </div>
   );
 }
