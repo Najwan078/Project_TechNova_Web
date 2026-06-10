@@ -152,7 +152,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       .catch(() => setStudents([]));
   }, [activeMenu]);
 
-  // Ikon SVG Profesional Menggantikan Emoji
   const iconMhs = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
   const iconAktif = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>;
   const iconIpk = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>;
@@ -341,7 +340,10 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
-        <BackgroundOrbs />
+        {/* Anti-Ghost Div: Menjebak BackgroundOrbs agar tidak menghalangi klik */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <BackgroundOrbs />
+        </div>
 
         <header className="relative z-30 bg-[#0a0a20]/80 backdrop-blur-xl border-b border-white/[0.06] shrink-0">
           <div className="flex items-center justify-between px-6 py-4">
@@ -689,7 +691,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       {agendas.slice(0, 3).map((info, idx) => (
-                        <div key={info.id || idx} className="flex flex-col gap-4 items-start p-6 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] hover:border-sky-400/30 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div key={info.id || idx} onClick={() => handleMenuChange('agenda')} className="flex flex-col gap-4 items-start p-6 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] hover:border-sky-400/30 transition-all duration-300 cursor-pointer hover:-translate-y-1 relative z-20">
                           <div className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${info.bg} ${info.color} whitespace-nowrap`}>
                             {info.type}
                           </div>
@@ -1101,9 +1103,8 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
           </div>
         </main>
 
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-          
-          <div className={`transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 translate-y-0 mb-4' : 'scale-0 opacity-0 translate-y-10 mb-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className={`absolute bottom-[70px] right-0 transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
             
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-b border-cyan-400/20 px-4 py-3 flex items-center justify-between backdrop-blur-md">
               <div className="flex items-center gap-3">
@@ -1162,7 +1163,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
 
           <button 
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 z-50 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
+            className={`relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
           >
             {isChatOpen ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
