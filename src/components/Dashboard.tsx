@@ -85,21 +85,19 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  // === STATE UNTUK EFEK LOADING PINDAH MENU ===
   const [isContentLoading, setIsContentLoading] = useState(false);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    { id: 1, text: 'Halo! Saya TechBot 🤖. Ada yang bisa saya bantu seputar TechNova University?', sender: 'bot' }
+    { id: 1, text: 'Halo! Saya TechBot, asisten virtual kampus TechNova University. Ada yang bisa saya bantu?', sender: 'bot' }
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   
   const accountRef = useRef<HTMLDivElement>(null);
-  const notifRef = useRef<HTMLDivElement>(null); // Ref baru untuk deteksi klik di luar notifikasi
+  const notifRef = useRef<HTMLDivElement>(null); 
 
-  // === STATE & FUNGSI UNTUK AGENDA KAMPUS DINAMIS ===
   const [agendas, setAgendas] = useState([
     { id: 1, title: 'Seminar Nasional AI & Web 3.0', date: '5 Juni 2026', loc: 'Auditorium Utama', type: 'Seminar', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
     { id: 2, title: 'Pekan Olahraga Teknik (PORSENI)', date: '12 - 15 Juni 2026', loc: 'Lapangan Olahraga', type: 'Kegiatan', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
@@ -107,26 +105,22 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   ]);
   const [newAgenda, setNewAgenda] = useState({ title: '', date: '', loc: '', type: 'Seminar' });
 
-  // === STATE NOTIFIKASI ===
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Login Berhasil', desc: 'Selamat datang kembali di sistem TechNova.', time: 'Sistem', type: 'info' }
   ]);
-  const [unreadCount, setUnreadCount] = useState(1); // Melacak notifikasi yang belum dibaca
+  const [unreadCount, setUnreadCount] = useState(1); 
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail) setUserEmail(storedEmail);
   }, []);
 
-  // Handler klik di luar menu dropdown (Akun & Notifikasi)
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      // Menutup menu akun
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setIsAccountOpen(false);
         setShowChangePassword(false);
       }
-      // Menutup menu notifikasi
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setIsNotifOpen(false);
       }
@@ -143,10 +137,9 @@ export default function Dashboard({ onLogout }: DashboardProps) {
 
   const [students, setStudents] = useState<StudentData[]>([]);
 
-  // Fungsi menambah notifikasi baru (otomatis menambah badge unread)
   const addNotification = (title: string, desc: string, type: string) => {
     setNotifications(prev => [{ id: Date.now(), title, desc, time: 'Baru saja', type }, ...prev]);
-    setUnreadCount(prev => prev + 1); // Tambah indikator unread
+    setUnreadCount(prev => prev + 1); 
   };
 
   useEffect(() => {
@@ -159,11 +152,17 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       .catch(() => setStudents([]));
   }, [activeMenu]);
 
+  // Ikon SVG Profesional Menggantikan Emoji
+  const iconMhs = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
+  const iconAktif = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>;
+  const iconIpk = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>;
+  const iconLulus = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>;
+
   const stats = [
-    { label: 'Total Mahasiswa', value: students.length, icon: '🎓', color: 'from-cyan-400/20 to-cyan-400/5', borderColor: 'border-cyan-400/20', textColor: 'text-cyan-400' },
-    { label: 'Mahasiswa Aktif', value: students.filter(s => s.status === 'Aktif').length, icon: '✅', color: 'from-emerald-400/20 to-emerald-400/5', borderColor: 'border-emerald-400/20', textColor: 'text-emerald-400' },
-    { label: 'IPK Rata-rata', value: students.length > 0 ? (students.reduce((a, b) => a + Number(b.ipk), 0) / students.length).toFixed(2) : "0.00", icon: '📊', color: 'from-purple-400/20 to-purple-400/5', borderColor: 'border-purple-400/20', textColor: 'text-purple-400' },
-    { label: 'Mahasiswa Lulus', value: students.filter(s => s.status === 'Lulus').length, icon: '🏆', color: 'from-amber-400/20 to-amber-400/5', borderColor: 'border-amber-400/20', textColor: 'text-amber-400' },
+    { label: 'Total Mahasiswa', value: students.length, icon: iconMhs, color: 'from-cyan-400/20 to-cyan-400/5', borderColor: 'border-cyan-400/20', textColor: 'text-cyan-400' },
+    { label: 'Mahasiswa Aktif', value: students.filter(s => s.status === 'Aktif').length, icon: iconAktif, color: 'from-emerald-400/20 to-emerald-400/5', borderColor: 'border-emerald-400/20', textColor: 'text-emerald-400' },
+    { label: 'IPK Rata-rata', value: students.length > 0 ? (students.reduce((a, b) => a + Number(b.ipk), 0) / students.length).toFixed(2) : "0.00", icon: iconIpk, color: 'from-purple-400/20 to-purple-400/5', borderColor: 'border-purple-400/20', textColor: 'text-purple-400' },
+    { label: 'Mahasiswa Lulus', value: students.filter(s => s.status === 'Lulus').length, icon: iconLulus, color: 'from-amber-400/20 to-amber-400/5', borderColor: 'border-amber-400/20', textColor: 'text-amber-400' },
   ];
 
   const animatedTotal = useCountUp(students.length);
@@ -171,11 +170,9 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const animatedLulus = useCountUp(students.filter(s => s.status === 'Lulus').length);
   const animatedIpk = useCountUpFloat(students.length > 0 ? parseFloat((students.reduce((a, b) => a + Number(b.ipk), 0) / students.length).toFixed(2)) : 0);
 
-  // === DATA UNTUK RECHARTS DONUT ===
   const totalMhs = students.length;
   const aktifMhs = students.filter(s => s.status === 'Aktif').length;
   const lulusMhs = students.filter(s => s.status === 'Lulus').length;
-  
   const aktifPersen = totalMhs === 0 ? 0 : Math.round((aktifMhs / totalMhs) * 100);
 
   const chartData = [
@@ -185,7 +182,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
 
   const defaultChartData = [{ name: 'Belum Ada Data', value: 1, color: '#334155' }];
 
-  // === STATE & EFFECT UNTUK GRAFIK REAL-TIME LINE CHART ===
   const [trendData, setTrendData] = useState<{ time: string; active: number }[]>([]);
 
   useEffect(() => {
@@ -217,19 +213,11 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     return () => clearInterval(interval);
   }, [students]); 
 
-  // === FUNGSI TRANSISI MENU ===
   const handleMenuChange = (menu: string) => {
     if (menu === activeMenu) return; 
-    
     setIsContentLoading(true);
-    
-    setTimeout(() => {
-      setActiveMenu(menu);
-    }, 200);
-    
-    setTimeout(() => {
-      setIsContentLoading(false);
-    }, 800);
+    setTimeout(() => { setActiveMenu(menu); }, 200);
+    setTimeout(() => { setIsContentLoading(false); }, 800);
   };
 
   const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -263,7 +251,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     }
   };
 
-  // === FUNGSI TAMBAH AGENDA ===
   const handleAddAgenda = (e: React.FormEvent) => {
     e.preventDefault();
     let color = 'text-sky-400';
@@ -281,18 +268,13 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFileName(e.target.files[0].name);
-    } else {
-      setFileName(null);
-    }
+    if (e.target.files && e.target.files.length > 0) { setFileName(e.target.files[0].name); } 
+    else { setFileName(null); }
   };
 
   const handleLogoutWithAnimation = () => {
     setIsLoggingOut(true);
-    setTimeout(() => {
-      onLogout();
-    }, 1500);
+    setTimeout(() => { onLogout(); }, 1500);
   };
 
   const handleChatSubmit = async (e: React.FormEvent) => {
@@ -389,20 +371,18 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 )}
               </button>
 
-              {/* === MENU NOTIFIKASI === */}
               <div className="relative" ref={notifRef}>
                 <button
                   onClick={() => { 
                     setIsNotifOpen(!isNotifOpen); 
                     setIsAccountOpen(false);
-                    if (!isNotifOpen) setUnreadCount(0); // Matikan badge & cahaya saat dibuka
+                    if (!isNotifOpen) setUnreadCount(0);
                   }}
                   className={`relative w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-300 ${isNotifOpen ? 'bg-white/[0.08] text-white border-cyan-400/30' : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:text-white hover:bg-white/[0.08]'}`}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
                   </svg>
-                  {/* Cahaya kedip hanya muncul kalau ada notifikasi belum dibaca */}
                   {unreadCount > 0 && (
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,229,255,0.6)] animate-pulse" />
                   )}
@@ -516,7 +496,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
 
         <main className="relative z-10 flex-1 px-6 py-8 overflow-y-auto lg:ml-0 pb-24">
           
-          {/* --- EFEK LOADING TRANSTION MENU --- */}
           {isContentLoading && (
             <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-[#050510]/80 backdrop-blur-md animate-in fade-in duration-300">
               <div className="relative w-16 h-16">
@@ -552,7 +531,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
 
                       <div className="relative z-10">
                         <div className="flex items-center justify-between mb-4">
-                          <div className={`w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500`}>
+                          <div className={`w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500 text-slate-300`}>
                             {stat.icon}
                           </div>
                           <span className={`text-4xl font-extrabold font-[Outfit] tracking-tight ${stat.textColor} drop-shadow-[0_0_15px_rgba(255,255,255,0.05)] group-hover:scale-110 transition-transform duration-500`}>
@@ -573,19 +552,16 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-start">
-                  
-                  {/* Kolom Kiri: Donut Chart + Realtime Chart */}
                   <div className="flex flex-col gap-6 w-full h-full">
-                    {/* === KOTAK TARGET MAHASISWA (UI DONAT RECHARTS) === */}
                     <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(0,229,255,0.15)] transition-all duration-500 relative overflow-hidden group h-fit">
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                       <div className="relative z-10">
                         <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
-                          📊 <span className="group-hover:text-cyan-400 transition-colors duration-300">Target Mahasiswa</span>
+                          <svg className="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                          <span className="group-hover:text-cyan-400 transition-colors duration-300">Target Mahasiswa</span>
                         </h3>
                         
                         <div className="flex flex-col items-center gap-8">
-                          {/* Atas: Diagram Donat */}
                           <div className="relative w-48 h-48 flex-shrink-0 flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
@@ -612,14 +588,12 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                                 />
                               </PieChart>
                             </ResponsiveContainer>
-                            {/* Teks Persentase di Tengah Donat */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                               <span className="text-4xl font-bold text-white leading-none mb-1">{aktifPersen}%</span>
                               <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">AKTIF</span>
                             </div>
                           </div>
 
-                          {/* Bawah: Kotak Statistik Sejajar */}
                           <div className="grid grid-cols-3 gap-3 w-full">
                             <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 transition-all hover:bg-white/[0.06] flex flex-col items-center text-center justify-center group/card">
                               <p className="text-[9px] text-slate-400 font-bold mb-1.5 tracking-wider group-hover/card:text-cyan-400 transition-colors uppercase">TOTAL</p>
@@ -647,11 +621,11 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                       </div>
                     </div>
 
-                    {/* === KOTAK GRAFIK KARTESIUS REAL-TIME === */}
                     <div className="glass rounded-3xl p-6 border border-white/[0.06] relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 flex-1 flex flex-col shadow-[0_15px_40px_-10px_rgba(16,185,129,0.1)]">
                       <div className="flex items-center justify-between mb-2 relative z-10">
                         <h3 className="font-[Outfit] font-semibold text-white text-lg flex items-center gap-2">
-                          📈 <span className="group-hover:text-emerald-400 transition-colors duration-300">Live Tracker Aktif</span>
+                          <svg className="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                          <span className="group-hover:text-emerald-400 transition-colors duration-300">Live Tracker Aktif</span>
                         </h3>
                         <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
@@ -687,25 +661,25 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                     </div>
                   </div>
 
-                  {/* Kolom Kanan: Kalender Akademik */}
                   <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(168,85,247,0.15)] transition-all duration-500 relative overflow-hidden group h-full">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                     <div className="relative z-10">
                       <h3 className="font-[Outfit] font-semibold text-white text-xl mb-6 flex items-center gap-2">
-                        📅 <span className="group-hover:text-purple-400 transition-colors duration-300">Kalender Akademik</span>
+                        <svg className="w-5 h-5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <span className="group-hover:text-purple-400 transition-colors duration-300">Kalender Akademik</span>
                       </h3>
                       <AcademicCalendar />
                     </div>
                   </div>
                 </div>
 
-                {/* === BARIS BAWAH: AGENDA KAMPUS (FULL WIDTH) === */}
                 <div className="glass rounded-3xl p-7 border border-white/[0.06] hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(56,189,248,0.15)] transition-all duration-500 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-sky-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="font-[Outfit] font-semibold text-white text-xl flex items-center gap-2">
-                        📢 <span className="group-hover:text-sky-400 transition-colors duration-300">Agenda Kampus</span>
+                        <svg className="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+                        <span className="group-hover:text-sky-400 transition-colors duration-300">Agenda Kampus</span>
                       </h3>
                       <button onClick={() => handleMenuChange('agenda')} className="text-sm px-4 py-2 bg-sky-400/10 text-sky-400 rounded-xl hover:bg-sky-400/20 hover:scale-105 transition-all flex items-center gap-2 font-medium">
                         Lihat Semua
@@ -742,7 +716,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
               </div>
             )}
 
-            {/* === MENU BARU: MANAJEMEN AGENDA === */}
             {activeMenu === 'agenda' && (
               <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
                 <div className="mb-6 flex justify-between items-end">
@@ -757,8 +730,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                  
-                  {/* Kolom Kiri: Form Tambah Agenda */}
                   <div className="lg:col-span-1 glass rounded-3xl p-7 border border-white/[0.06] sticky top-6">
                     <h3 className="text-xl font-bold font-[Outfit] text-white mb-5 flex items-center gap-2">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan-400"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -794,10 +765,10 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                     </form>
                   </div>
 
-                  {/* Kolom Kanan: Daftar Seluruh Agenda */}
                   <div className="lg:col-span-2 glass rounded-3xl p-7 border border-white/[0.06]">
                      <h3 className="text-xl font-bold font-[Outfit] text-white mb-6 flex items-center gap-2">
-                        📋 Daftar Seluruh Agenda
+                        <svg className="w-5 h-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                        Daftar Seluruh Agenda
                      </h3>
                      
                      <div className="space-y-4">
@@ -853,8 +824,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
             {activeMenu === 'about' && (
               <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
                 <div className="max-w-5xl mx-auto pb-20">
-                  
-                  {/* --- HEADER LOGO --- */}
                   <div className="text-center mb-16">
                     <div className="relative inline-block">
                        <div className="absolute inset-0 bg-cyan-500/20 blur-[50px] rounded-full"></div>
@@ -870,8 +839,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                   </div>
 
                   <div className="space-y-8">
-                    
-                    {/* --- VISI & MISI --- */}
                     <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-10 backdrop-blur-md relative overflow-hidden group hover:border-cyan-400/30 transition-all duration-500">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/10 transition-colors"></div>
                       <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
@@ -884,8 +851,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      
-                      {/* --- ALGORITMA CARD --- */}
                       <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-8 hover:bg-white/[0.05] transition-all group">
                         <div className="w-14 h-14 bg-cyan-400/10 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all">
                           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
@@ -901,7 +866,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                         </p>
                       </div>
 
-                      {/* --- TECH STACK CARD --- */}
                       <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-8 hover:bg-white/[0.05] transition-all group">
                         <div className="w-14 h-14 bg-purple-400/10 rounded-2xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] transition-all">
                           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -927,7 +891,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                       </div>
                     </div>
 
-                    {/* --- GALERI FASILITAS --- */}
                     <div className="mt-16 pt-12 border-t border-white/[0.06]">
                       <div className="text-center mb-10">
                         <h3 className="text-3xl font-bold font-[Outfit] text-white">Jelajahi <span className="gradient-text">Kampus Kami</span></h3>
@@ -957,7 +920,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                       </div>
                     </div>
 
-                    {/* --- MEET THE DEVELOPER --- */}
                     <div className="mt-20 pt-16 flex flex-col items-center">
                        <div className="text-center mb-10">
                           <h3 className="text-2xl font-bold font-[Outfit] text-white">Meet the <span className="gradient-text">Developer</span></h3>
@@ -969,8 +931,8 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           <div className="relative w-full max-w-md bg-[#0a0a20]/90 border border-white/[0.1] rounded-[2.5rem] p-8 backdrop-blur-2xl flex flex-col sm:flex-row items-center gap-8 shadow-2xl">
                              <div className="relative">
                                 <div className="w-24 h-24 rounded-full border-2 border-cyan-400/50 p-1 group-hover:rotate-12 transition-transform duration-500">
-                                   <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
-                                      <span className="text-3xl">👨‍💻</span>
+                                   <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center text-slate-300">
+                                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                    </div>
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-4 border-[#0a0a20] rounded-full animate-pulse"></div>
@@ -1139,13 +1101,10 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
           </div>
         </main>
 
-        {/* --- FLOATING CHATBOT AI --- */}
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
           
-          {/* Chat Window */}
           <div className={`transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 translate-y-0 mb-4' : 'scale-0 opacity-0 translate-y-10 mb-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
             
-            {/* Header Chat */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-b border-cyan-400/20 px-4 py-3 flex items-center justify-between backdrop-blur-md">
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -1164,7 +1123,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
               </button>
             </div>
 
-            {/* Body Chat (Daftar Pesan) */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/40 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent">
               {chatMessages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -1174,7 +1132,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 </div>
               ))}
               
-              {/* Animasi Typing */}
               {isBotTyping && (
                 <div className="flex justify-start">
                   <div className="bg-white/[0.05] border border-white/[0.1] rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
@@ -1187,7 +1144,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
               <div ref={chatEndRef} />
             </div>
 
-            {/* Footer Input */}
             <div className="p-3 bg-black/60 border-t border-white/[0.05]">
               <form onSubmit={handleChatSubmit} className="relative flex items-center">
                 <input 
@@ -1204,7 +1160,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
             </div>
           </div>
 
-          {/* Tombol Floating Action Button (FAB) */}
           <button 
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 z-50 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
