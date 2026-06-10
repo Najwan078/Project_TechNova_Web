@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import BackgroundOrbs from './BackgroundOrbs';
 import Sidebar from './Sidebar';
 import StudentTable from './StudentTable';
+import UserAvatar from './UserAvatar';
 import AcademicCalendar from './AkademikKalender';
 import logoKampus from '../assets/Logo_Technova_University.png';
 import imgGedung from '../assets/Gedung Utama.png';
@@ -83,6 +84,9 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const [isSendingMsg, setIsSendingMsg] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [fileName, setFileName] = useState<string | null>(null);
+
+  // === STATE UNTUK EFEK LOADING PINDAH MENU ===
+  const [isContentLoading, setIsContentLoading] = useState(false);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
@@ -201,6 +205,22 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     return () => clearInterval(interval);
   }, [students]); 
 
+  // === FUNGSI TRANSISI MENU ===
+  const handleMenuChange = (menu: string) => {
+    if (menu === activeMenu) return; // Abaikan kalau klik menu yang sama
+    
+    // 1. Munculkan Layar Loading
+    setIsContentLoading(true);
+    
+    // 2. Ganti Halamaan di Belakang Layar
+    setActiveMenu(menu);
+    
+    // 3. Matikan Layar Loading setelah 800ms
+    setTimeout(() => {
+      setIsContentLoading(false);
+    }, 800);
+  };
+
   const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSendingMsg(true); 
@@ -285,7 +305,8 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           messages: [
             {
               role: 'system',
-              content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan administrasi kampus secara ramah dan ringkas dalam Bahasa Indonesia.`,
+              content: `Kamu adalah TechBot, asisten virtual kampus TechNova University.
+Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan administrasi kampus secara ramah dan ringkas dalam Bahasa Indonesia.`,
             },
             { role: 'user', content: userText },
           ],
@@ -318,7 +339,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     >
       <Sidebar
         activeMenu={activeMenu}
-        onMenuClick={setActiveMenu}
+        onMenuClick={handleMenuChange} 
         isMobileOpen={sidebarMobileOpen}
         onMobileClose={() => setSidebarMobileOpen(false)}
         isLightMode={isLightMode}
@@ -475,6 +496,21 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </header>
 
         <main className="relative z-10 flex-1 px-6 py-8 overflow-y-auto lg:ml-0 pb-24">
+          
+          {/* --- EFEK LOADING TRANSTION MENU --- */}
+          {isContentLoading && (
+            <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-[#050510]/80 backdrop-blur-md animate-in fade-in duration-300">
+              <div className="relative w-16 h-16 mb-4">
+                <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan-400 animate-pulse"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                </div>
+              </div>
+              <p className="text-cyan-400 font-[Outfit] text-sm tracking-widest uppercase animate-pulse">Memuat Workspace...</p>
+            </div>
+          )}
+
           <div className="max-w-6xl mx-auto">
 
             {activeMenu === 'beranda' && (
@@ -653,7 +689,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
                       <h3 className="font-[Outfit] font-semibold text-white text-xl flex items-center gap-2">
                         📢 <span className="group-hover:text-sky-400 transition-colors duration-300">Agenda Kampus</span>
                       </h3>
-                      <button onClick={() => setActiveMenu('agenda')} className="text-sm px-4 py-2 bg-sky-400/10 text-sky-400 rounded-xl hover:bg-sky-400/20 hover:scale-105 transition-all flex items-center gap-2 font-medium">
+                      <button onClick={() => handleMenuChange('agenda')} className="text-sm px-4 py-2 bg-sky-400/10 text-sky-400 rounded-xl hover:bg-sky-400/20 hover:scale-105 transition-all flex items-center gap-2 font-medium">
                         Lihat Semua
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
                       </button>
@@ -696,7 +732,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
                     <h2 className="text-3xl font-bold font-[Outfit] text-white mb-2">Manajemen <span className="gradient-text">Agenda Kampus</span></h2>
                     <p className="text-slate-400">Tambahkan dan kelola pengumuman kegiatan universitas</p>
                   </div>
-                  <button onClick={() => setActiveMenu('beranda')} className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                  <button onClick={() => handleMenuChange('beranda')} className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                     Kembali
                   </button>
@@ -1086,10 +1122,10 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </main>
 
         {/* --- FLOATING CHATBOT AI --- */}
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
           
           {/* Chat Window */}
-          <div className={`pointer-events-auto transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 translate-y-0 mb-4' : 'scale-0 opacity-0 translate-y-10 mb-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
+          <div className={`transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 translate-y-0 mb-4' : 'scale-0 opacity-0 translate-y-10 mb-0 pointer-events-none'} w-[320px] sm:w-[360px] h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
             
             {/* Header Chat */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-b border-cyan-400/20 px-4 py-3 flex items-center justify-between backdrop-blur-md">
@@ -1153,7 +1189,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           {/* Tombol Floating Action Button (FAB) */}
           <button 
             onClick={() => setIsChatOpen(!isChatOpen)}
-              className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 z-50 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
+            className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-110 z-50 ${isChatOpen ? 'bg-rose-500 rotate-90 text-white' : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white animate-bounce'}`}
           >
             {isChatOpen ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
