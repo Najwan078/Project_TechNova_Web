@@ -97,6 +97,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
   
   const accountRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null); // Ref baru untuk deteksi klik di luar notifikasi
 
   // === STATE & FUNGSI UNTUK AGENDA KAMPUS DINAMIS ===
   const [agendas, setAgendas] = useState([
@@ -106,16 +107,28 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   ]);
   const [newAgenda, setNewAgenda] = useState({ title: '', date: '', loc: '', type: 'Seminar' });
 
+  // === STATE NOTIFIKASI ===
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Login Berhasil', desc: 'Selamat datang kembali di sistem TechNova.', time: 'Sistem', type: 'info' }
+  ]);
+  const [unreadCount, setUnreadCount] = useState(1); // Melacak notifikasi yang belum dibaca
+
   useEffect(() => {
     const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail) setUserEmail(storedEmail);
   }, []);
 
+  // Handler klik di luar menu dropdown (Akun & Notifikasi)
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      // Menutup menu akun
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setIsAccountOpen(false);
         setShowChangePassword(false);
+      }
+      // Menutup menu notifikasi
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setIsNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -129,12 +142,11 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   }, [chatMessages, isBotTyping, isChatOpen]);
 
   const [students, setStudents] = useState<StudentData[]>([]);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Login Berhasil', desc: 'Selamat datang kembali di sistem TechNova.', time: 'Sistem', type: 'info' }
-  ]);
 
+  // Fungsi menambah notifikasi baru (otomatis menambah badge unread)
   const addNotification = (title: string, desc: string, type: string) => {
     setNotifications(prev => [{ id: Date.now(), title, desc, time: 'Baru saja', type }, ...prev]);
+    setUnreadCount(prev => prev + 1); // Tambah indikator unread
   };
 
   useEffect(() => {
@@ -207,17 +219,14 @@ export default function Dashboard({ onLogout }: DashboardProps) {
 
   // === FUNGSI TRANSISI MENU ===
   const handleMenuChange = (menu: string) => {
-    if (menu === activeMenu) return; // Abaikan kalau klik menu yang sama
+    if (menu === activeMenu) return; 
     
-    // 1. Munculkan Layar Loading
     setIsContentLoading(true);
     
-    // 2. Beri sedikit delay sebelum mengganti menu agar layar loading sempat menutupi
     setTimeout(() => {
       setActiveMenu(menu);
     }, 200);
     
-    // 3. Matikan Layar Loading setelah 800ms
     setTimeout(() => {
       setIsContentLoading(false);
     }, 800);
@@ -268,7 +277,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     const agendaItem = { ...newAgenda, id: Date.now(), color, bg };
     setAgendas([agendaItem, ...agendas]);
     addNotification('Agenda Ditambahkan', `${newAgenda.title} berhasil diterbitkan.`, 'success');
-    setNewAgenda({ title: '', date: '', loc: '', type: 'Seminar' }); // Reset Form
+    setNewAgenda({ title: '', date: '', loc: '', type: 'Seminar' }); 
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,21 +389,32 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                 )}
               </button>
 
-              <div className="relative">
+              {/* === MENU NOTIFIKASI === */}
+              <div className="relative" ref={notifRef}>
                 <button
-                  onClick={() => { setIsNotifOpen(!isNotifOpen); setIsAccountOpen(false); }}
+                  onClick={() => { 
+                    setIsNotifOpen(!isNotifOpen); 
+                    setIsAccountOpen(false);
+                    if (!isNotifOpen) setUnreadCount(0); // Matikan badge & cahaya saat dibuka
+                  }}
                   className={`relative w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-300 ${isNotifOpen ? 'bg-white/[0.08] text-white border-cyan-400/30' : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:text-white hover:bg-white/[0.08]'}`}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
                   </svg>
-                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,229,255,0.6)] animate-pulse" />
+                  {/* Cahaya kedip hanya muncul kalau ada notifikasi belum dibaca */}
+                  {unreadCount > 0 && (
+                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,229,255,0.6)] animate-pulse" />
+                  )}
                 </button>
+                
                 {isNotifOpen && (
                   <div className="absolute top-14 right-0 w-80 bg-[#0a0a20]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
                     <div className="px-4 py-3 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.02]">
                       <h3 className="font-[Outfit] font-semibold text-white text-sm">Notifikasi</h3>
-                      <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2.5 py-1 rounded-full font-bold border border-cyan-500/20">{notifications.length} Baru</span>
+                      {unreadCount > 0 && (
+                        <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2.5 py-1 rounded-full font-bold border border-cyan-500/20">{unreadCount} Baru</span>
+                      )}
                     </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.map(notif => (
@@ -407,9 +427,6 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           </div>
                         </div>
                       ))}
-                    </div>
-                    <div className="px-4 py-2.5 text-center border-t border-white/[0.06]">
-                      <button onClick={() => setIsNotifOpen(false)} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Tutup Notifikasi</button>
                     </div>
                   </div>
                 )}
