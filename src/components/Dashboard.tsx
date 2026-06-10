@@ -1054,7 +1054,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           </div>
                           <div>
                             <label className="block text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Alamat Email</label>
-                            <input type="email" name="reply_to" required placeholder="budi@mhs.unpam.ac.id" className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-cyan-400/50 focus:bg-cyan-400/5 transition-all" />
+                            <input type="email" name="reply_to" required placeholder="budi@gmail.com" className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-cyan-400/50 focus:bg-cyan-400/5 transition-all" />
                           </div>
                         </div>
 
@@ -1111,7 +1111,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
         </main>
 
         <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
-          {/* RESPONSIVE: w-[calc(100vw-2rem)] untuk memaksa chat box tidak membesarkan layar HP */}
+          {/* RESPONSIVE: w-[calc(100vw-2rem)] */}
           <div className={`absolute bottom-[60px] sm:bottom-[70px] right-0 transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'} w-[calc(100vw-2rem)] sm:w-[360px] h-[400px] sm:h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
             
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-b border-cyan-400/20 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between backdrop-blur-md">
