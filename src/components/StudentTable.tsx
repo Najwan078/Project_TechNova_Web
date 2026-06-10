@@ -434,16 +434,17 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
       )}
 
-      <div className="glass rounded-2xl overflow-hidden relative">
-        <table className="w-full">
+      {/* === BAGIAN YANG DIPERBAIKI (TABLE WRAPPER UNTUK MOBILE SCROLLING) === */}
+      <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative pb-2">
+        <table className="w-full min-w-[800px] text-left">
           <thead>
             <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-              <th className="text-left px-6 py-4 text-[11px] uppercase text-slate-500">NIM</th>
-              <th className="text-left px-6 py-4 text-[11px] uppercase text-slate-500">Nama</th>
-              <th className="text-left px-6 py-4 text-[11px] uppercase text-slate-500">Jurusan</th>
-              <th className="text-left px-6 py-4 text-[11px] uppercase text-slate-500">IPK</th>
-              <th className="text-left px-6 py-4 text-[11px] uppercase text-slate-500">Status</th>
-              <th className="text-left px-6 py-4 text-[11px] uppercase text-slate-500">Aksi</th>
+              <th className="px-6 py-4 text-[11px] uppercase text-slate-500">NIM</th>
+              <th className="px-6 py-4 text-[11px] uppercase text-slate-500">Nama</th>
+              <th className="px-6 py-4 text-[11px] uppercase text-slate-500">Jurusan</th>
+              <th className="px-6 py-4 text-[11px] uppercase text-slate-500">IPK</th>
+              <th className="px-6 py-4 text-[11px] uppercase text-slate-500">Status</th>
+              <th className="px-6 py-4 text-[11px] uppercase text-slate-500">Aksi</th>
             </tr>
           </thead>
           <tbody>
