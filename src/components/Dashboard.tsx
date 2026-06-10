@@ -212,8 +212,10 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     // 1. Munculkan Layar Loading
     setIsContentLoading(true);
     
-    // 2. Ganti Halamaan di Belakang Layar
-    setActiveMenu(menu);
+    // 2. Beri sedikit delay sebelum mengganti menu agar layar loading sempat menutupi
+    setTimeout(() => {
+      setActiveMenu(menu);
+    }, 200);
     
     // 3. Matikan Layar Loading setelah 800ms
     setTimeout(() => {
@@ -500,14 +502,13 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
           {/* --- EFEK LOADING TRANSTION MENU --- */}
           {isContentLoading && (
             <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-[#050510]/80 backdrop-blur-md animate-in fade-in duration-300">
-              <div className="relative w-16 h-16 mb-4">
+              <div className="relative w-16 h-16">
                 <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
                 <div className="absolute inset-0 border-4 border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan-400 animate-pulse"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 </div>
               </div>
-              <p className="text-cyan-400 font-[Outfit] text-sm tracking-widest uppercase animate-pulse">Memuat Workspace...</p>
             </div>
           )}
 
@@ -1061,11 +1062,11 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                           <div>
                             <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Nama Lengkap</label>
-                            <input type="text" name="from_name" required placeholder="John Doe" className="w-full px-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 focus:bg-cyan-400/5 transition-all" />
+                            <input type="text" name="from_name" required placeholder="Budi Santoso" className="w-full px-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 focus:bg-cyan-400/5 transition-all" />
                           </div>
                           <div>
                             <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Alamat Email</label>
-                            <input type="email" name="reply_to" required placeholder="john@technova.ac.id" className="w-full px-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 focus:bg-cyan-400/5 transition-all" />
+                            <input type="email" name="reply_to" required placeholder="budi@mhs.unpam.ac.id" className="w-full px-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 focus:bg-cyan-400/5 transition-all" />
                           </div>
                         </div>
 
