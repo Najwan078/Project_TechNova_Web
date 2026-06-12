@@ -499,11 +499,11 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       {/* MODAL EDIT — tombol Simpan dengan loading state */}
       {editStudent && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-backdrop"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-backdrop"
           onClick={() => !isSavingEdit && setEditStudent(null)}
         >
           <div
-            className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4 animate-modal-popup"
+            className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md animate-modal-popup max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-500/20"
             onClick={e => e.stopPropagation()}
           >
             <h2 className="text-white font-bold text-lg mb-4">✏ Edit Mahasiswa</h2>
