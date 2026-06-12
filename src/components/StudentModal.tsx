@@ -19,21 +19,17 @@ export default function StudentModal({ student, onClose }: StudentModalProps) {
   if (!student) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ animation: 'fadeIn 0.2s ease-out' }}
-    >
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop dengan class transisi baru */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 animate-backdrop"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal dengan class transisi membal (bouncy) baru */}
       <div
-        className="relative glass-strong rounded-3xl p-8 max-w-lg w-full"
+        className="relative glass-strong rounded-3xl p-8 max-w-lg w-full animate-modal-popup"
         style={{
-          animation: 'zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
           boxShadow: '0 0 80px rgba(0, 229, 255, 0.1), 0 0 160px rgba(139, 92, 246, 0.05)',
         }}
       >

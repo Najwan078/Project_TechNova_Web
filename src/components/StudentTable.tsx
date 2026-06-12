@@ -465,7 +465,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                 <tr
                   key={student.nim}
                   onClick={() => setSelectedStudent(student)}
-                  className="hover:bg-white/[0.03] cursor-pointer border-b border-white/[0.03]"
+                  className="row-glow cursor-pointer border-b border-white/[0.03]"
                   style={{ animation: 'fadeInUp 0.3s ease-out both' }}
                 >
                   <td className="px-6 py-4 text-sm text-cyan-400">{student.nim}</td>
@@ -499,11 +499,11 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       {/* MODAL EDIT — tombol Simpan dengan loading state */}
       {editStudent && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-backdrop"
           onClick={() => !isSavingEdit && setEditStudent(null)}
         >
           <div
-            className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4"
+            className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4 animate-modal-popup"
             onClick={e => e.stopPropagation()}
           >
             <h2 className="text-white font-bold text-lg mb-4">✏ Edit Mahasiswa</h2>

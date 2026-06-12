@@ -42,6 +42,10 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(139, 92, 246, 0.5);
 }
 
+/* =========================================
+   ANIMATIONS & KEYFRAMES
+   ========================================= */
+
 /* Animated background orbs */
 @keyframes float1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -111,9 +115,50 @@ h1, h2, h3, h4, h5, h6 {
   to { transform: translateX(-100%); }
 }
 
+/* Particle dots */
+@keyframes particleFloat {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+}
+
+/* --- TAMBAHAN BARU: Page & Modal Transitions --- */
+
+/* Transisi Pindah Menu (Smooth Slide Up & Fade) */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-page-transition {
+  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Transisi Modal Background Blur */
+@keyframes backdropEnter {
+  from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+}
+.animate-backdrop {
+  animation: backdropEnter 0.4s ease forwards;
+}
+
+/* Transisi Modal Pop-up (Bouncy Scale) */
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-modal-popup {
+  animation: modalEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+
+/* =========================================
+   UTILITY CLASSES & COMPONENTS
+   ========================================= */
+
 /* Input focus glow */
 .input-glow:focus {
   box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.3), 0 0 20px rgba(0, 229, 255, 0.1);
+  outline: none;
 }
 
 /* Table row glow */
@@ -121,8 +166,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease;
 }
 .row-glow:hover {
-  background: rgba(0, 229, 255, 0.06) !important;
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.1), inset 0 0 20px rgba(0, 229, 255, 0.03);
+  background: rgba(0, 229, 255, 0.05) !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.1), inset 4px 0 0 0 #00e5ff;
   transform: scale(1.005);
 }
 
@@ -165,11 +210,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 .btn-gradient:hover {
   box-shadow: 0 0 25px rgba(0, 229, 255, 0.4), 0 0 50px rgba(139, 92, 246, 0.2);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
 }
-
-/* Particle dots */
-@keyframes particleFloat {
-  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
-  50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+.btn-gradient:active {
+  transform: translateY(0) scale(0.98);
 }

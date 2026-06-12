@@ -514,7 +514,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
           <div className="max-w-6xl mx-auto">
 
             {activeMenu === 'beranda' && (
-              <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+              <div className="animate-page-transition">
                 <div className="mb-6 sm:mb-8">
                   <h2 className="text-2xl sm:text-3xl font-bold font-[Outfit] text-white mb-2">
                     Selamat Datang <span className="gradient-text capitalize">{userName}</span> 
@@ -722,7 +722,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
             )}
 
             {activeMenu === 'agenda' && (
-              <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+              <div className="animate-page-transition">
                 <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                   <div>
                     <h2 className="text-2xl sm:text-3xl font-bold font-[Outfit] text-white mb-2">Manajemen <span className="gradient-text">Agenda</span></h2>
@@ -818,7 +818,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
             )}
 
             {activeMenu === 'pencarian' && (
-              <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+              <div className="animate-page-transition">
                 <div className="mb-6">
                   <h2 className="text-2xl sm:text-3xl font-bold font-[Outfit] text-white mb-2">Pencarian <span className="gradient-text">Data Mahasiswa</span></h2>
                   <p className="text-sm sm:text-base text-slate-400">Kelola dan cari data mahasiswa TechNova University</p>
@@ -831,7 +831,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
             )}
 
             {activeMenu === 'about' && (
-              <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+              <div className="animate-page-transition">
                 <div className="max-w-5xl mx-auto pb-20">
                   <div className="text-center mb-12 sm:mb-16">
                     <div className="relative inline-block">
@@ -981,7 +981,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
             )}
 
             {activeMenu === 'contact' && (
-              <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+              <div className="animate-page-transition">
                 <div className="max-w-6xl mx-auto">
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-start">
@@ -1116,7 +1116,7 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
 
         <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
           {/* RESPONSIVE: w-[calc(100vw-2rem)] */}
-          <div className={`absolute bottom-[60px] sm:bottom-[70px] right-0 transition-all duration-500 ease-in-out transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'} w-[calc(100vw-2rem)] sm:w-[360px] h-[400px] sm:h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
+          <div className={`absolute bottom-[60px] sm:bottom-[70px] right-0 transform origin-bottom-right transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isChatOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'} w-[calc(100vw-2rem)] sm:w-[360px] h-[400px] sm:h-[450px] glass border border-cyan-400/30 rounded-2xl shadow-[0_15px_40px_rgba(0,229,255,0.2)] flex flex-col overflow-hidden`}>
             
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-b border-cyan-400/20 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between backdrop-blur-md">
               <div className="flex items-center gap-2.5 sm:gap-3">
