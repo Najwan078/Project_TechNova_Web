@@ -914,7 +914,11 @@ Jawab pertanyaan seputar akademik, jadwal kuliah, nilai, UKT, beasiswa, dan admi
                           { title: "Smart Parking", desc: "Sistem parkir otomatis berbasis AI.", src: imgParkiran },
                           { title: "Smart Toilet", desc: "Fasilitas bersih dengan sensor otomatis.", src: imgToilet },
                         ].map((item, index) => (
-                          <div key={index} className="group relative rounded-2xl sm:rounded-[2rem] overflow-hidden border border-white/[0.08] aspect-[4/3] cursor-pointer bg-black">
+                          <div 
+                            key={index} 
+                            className="group relative rounded-2xl sm:rounded-[2rem] overflow-hidden border border-white/[0.08] aspect-[4/3] cursor-pointer bg-black"
+                            style={{ filter: isLightMode ? 'invert(1) hue-rotate(180deg)' : 'none' }}
+                          >
                             <img src={item.src} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-125 opacity-70 group-hover:opacity-100" />
                             
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
