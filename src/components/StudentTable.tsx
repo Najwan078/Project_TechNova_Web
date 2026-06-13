@@ -26,7 +26,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
-  // STATE BARU UNTUK METRIK ALGORITMA & SCANNING
+  // STATE METRIK & VISUALISASI ALGORITMA
   const [langkah, setLangkah] = useState<number>(0);
   const [waktuEksekusi, setWaktuEksekusi] = useState<string>('0.0000'); 
   const [activeAlgo, setActiveAlgo] = useState<string>('');
@@ -75,27 +75,26 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
   useEffect(() => { fetchStudents(); }, []);
 
+  // ========================================================
+  // FUNGSI PENCARIAN DENGAN VISUALISASI
+  // ========================================================
   const handleSearch = async () => {
     setIsSearching(true);
 
-    // === EFEK VISUALISASI PENCARIAN (FRONTEND) ===
     if (search.trim() !== '' && students.length > 0) {
       if (searchType === 'nama' || searchType === 'jurusan') {
-        // Linear & Sequential: Scan dari atas ke bawah
         const targetStr = search.toLowerCase();
         let targetIndex = students.findIndex(s => 
           searchType === 'nama' ? s.nama.toLowerCase().includes(targetStr) : s.jurusan.toLowerCase().includes(targetStr)
         );
         
-        // Jika tidak ketemu di layar saat ini, scan sampai baris terakhir
-        const scanLimit = targetIndex === -1 ? students.length - 1 : targetIndex;
+        const scanLimit = targetIndex === -1 ? Math.min(students.length - 1, 15) : targetIndex;
 
         for (let i = 0; i <= scanLimit; i++) {
           setScanningIndex(i);
-          await new Promise(r => setTimeout(r, 80)); // Kecepatan sorotan (80ms)
+          await new Promise(r => setTimeout(r, 80));
         }
       } else if (searchType === 'nim') {
-        // Binary Search ilustrasi: lompat-lompat mencari titik tengah
         setScanningIndex(Math.floor(students.length / 2));
         await new Promise(r => setTimeout(r, 250));
         setScanningIndex(Math.floor(students.length / 4));
@@ -109,11 +108,10 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         }
       }
     } else {
-      await new Promise(r => setTimeout(r, 600)); // Animasi loading biasa jika search kosong
+      await new Promise(r => setTimeout(r, 600)); 
     }
     
-    setScanningIndex(null); // Matikan efek sorotan
-    // =============================================
+    setScanningIndex(null); 
 
     fetchStudents(`?q=${search}&search_type=${searchType}`);
     let algoName = '';
@@ -143,75 +141,126 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     return merge(mergeSort(data.slice(0, mid)), mergeSort(data.slice(mid)));
   };
 
+  // ========================================================
+  // FUNGSI SORTING DENGAN REAL-TIME ANIMATION VISUALIZER
+  // ========================================================
   const handleSort = async (type: 'ipk' | 'nim' | 'semester') => {
+    if (students.length === 0) return;
+
     if (type === 'ipk') setIsSortingIpk(true);
     else if (type === 'nim') setIsSortingNim(true);
     else setIsSortingSemester(true);
 
-    await new Promise(r => setTimeout(r, 700));
+    let realSortedData = [...students];
+    let realSteps = 0;
+    let realTime = 0;
 
-    if (type === 'semester') {
-      const t0 = performance.now(); 
-      const sortedData = mergeSort([...students]);
-      const t1 = performance.now(); 
-
-      setWaktuEksekusi((t1 - t0).toFixed(4));
-      setStudents(sortedData);
-      setActiveAlgo('merge');
-      setLangkah(Math.ceil(students.length * Math.log2(students.length || 1)));
-      if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Merge Sort (Semester).', 'success');
-      setIsSortingSemester(false);
-
-    } else if (type === 'ipk') {
-      let dataCopy = [...students];
-      let steps = 0;
-      
-      const t0 = performance.now(); 
-      for (let i = 0; i < dataCopy.length - 1; i++) {
-        for (let j = 0; j < dataCopy.length - i - 1; j++) {
-          steps++;
-          if (Number(dataCopy[j].ipk) < Number(dataCopy[j + 1].ipk)) {
-            let temp = dataCopy[j];
-            dataCopy[j] = dataCopy[j + 1];
-            dataCopy[j + 1] = temp;
+    // 1. HITUNG WAKTU ASLI (REAL COMPUTATION TIME) DI BACKGROUND
+    const t0 = performance.now();
+    if (type === 'ipk') {
+      for (let i = 0; i < realSortedData.length - 1; i++) {
+        for (let j = 0; j < realSortedData.length - i - 1; j++) {
+          realSteps++;
+          if (Number(realSortedData[j].ipk) < Number(realSortedData[j + 1].ipk)) {
+            let temp = realSortedData[j];
+            realSortedData[j] = realSortedData[j + 1];
+            realSortedData[j + 1] = temp;
           }
         }
       }
-      const t1 = performance.now(); 
-
-      setWaktuEksekusi((t1 - t0).toFixed(4));
-      setStudents(dataCopy);
-      setActiveAlgo('bubble');
-      setLangkah(steps);
-      if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Bubble Sort (IPK).', 'success');
-      setIsSortingIpk(false);
-
     } else if (type === 'nim') {
-      let dataCopy = [...students];
-      let steps = 0;
-      
-      const t0 = performance.now(); 
-      for (let i = 0; i < dataCopy.length - 1; i++) {
+      for (let i = 0; i < realSortedData.length - 1; i++) {
         let minIdx = i;
-        for (let j = i + 1; j < dataCopy.length; j++) {
-          steps++;
-          if (dataCopy[j].nim < dataCopy[minIdx].nim) minIdx = j;
+        for (let j = i + 1; j < realSortedData.length; j++) {
+          realSteps++;
+          if (realSortedData[j].nim < realSortedData[minIdx].nim) minIdx = j;
         }
         if (minIdx !== i) {
-          let temp = dataCopy[i];
-          dataCopy[i] = dataCopy[minIdx];
-          dataCopy[minIdx] = temp;
+          let temp = realSortedData[i];
+          realSortedData[i] = realSortedData[minIdx];
+          realSortedData[minIdx] = temp;
         }
       }
-      const t1 = performance.now(); 
-
-      setWaktuEksekusi((t1 - t0).toFixed(4));
-      setStudents(dataCopy);
-      setActiveAlgo('selection');
-      setLangkah(steps);
-      if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Selection Sort (NIM).', 'success');
-      setIsSortingNim(false);
+    } else if (type === 'semester') {
+      realSortedData = mergeSort([...students]);
+      realSteps = Math.ceil(students.length * Math.log2(students.length || 1));
     }
+    const t1 = performance.now();
+    realTime = (t1 - t0) > 0 ? (t1 - t0) : 0.0025; // Menghindari waktu 0 jika data sangat kecil
+
+    // 2. VISUALISASI PERTUKARAN DATA DI FRONTEND
+    const MAX_VISUAL_STEPS = 20; // Batasi animasi agar tidak makan waktu 10 menit
+    let visualData = [...students];
+    
+    if (type === 'ipk') { 
+      // --- VISUAL BUBBLE SORT ---
+      let visualCount = 0;
+      for (let i = 0; i < visualData.length - 1 && visualCount < MAX_VISUAL_STEPS; i++) {
+        for (let j = 0; j < visualData.length - i - 1 && visualCount < MAX_VISUAL_STEPS; j++) {
+          setScanningIndex(j);
+          await new Promise(r => setTimeout(r, 40));
+          if (Number(visualData[j].ipk) < Number(visualData[j + 1].ipk)) {
+            // Swap visual
+            let temp = visualData[j];
+            visualData[j] = visualData[j + 1];
+            visualData[j + 1] = temp;
+            setStudents([...visualData]);
+            setScanningIndex(j + 1);
+            await new Promise(r => setTimeout(r, 40));
+          }
+          visualCount++;
+        }
+      }
+    } else if (type === 'nim') { 
+       // --- VISUAL SELECTION SORT ---
+       let visualCount = 0;
+       for (let i = 0; i < visualData.length - 1 && visualCount < MAX_VISUAL_STEPS; i++) {
+          let minIdx = i;
+          setScanningIndex(i);
+          await new Promise(r => setTimeout(r, 60));
+          
+          for (let j = i + 1; j < visualData.length && visualCount < MAX_VISUAL_STEPS; j++) {
+             setScanningIndex(j);
+             await new Promise(r => setTimeout(r, 20)); // Gerak cepat scan sisa data
+             if (visualData[j].nim < visualData[minIdx].nim) {
+                minIdx = j;
+             }
+             visualCount++;
+          }
+          if (minIdx !== i) {
+            // Swap visual
+            let temp = visualData[i];
+            visualData[i] = visualData[minIdx];
+            visualData[minIdx] = temp;
+            setStudents([...visualData]);
+            setScanningIndex(i);
+            await new Promise(r => setTimeout(r, 60));
+          }
+       }
+    } else if (type === 'semester') { 
+       // --- VISUAL MERGE SORT ---
+       for (let i = 0; i < Math.min(visualData.length, 15); i += 2) {
+          setScanningIndex(i);
+          await new Promise(r => setTimeout(r, 60));
+          setScanningIndex(i+1);
+          await new Promise(r => setTimeout(r, 60));
+       }
+    }
+
+    // 3. SELESAI ANIMASI -> TAMPILKAN HASIL SORTING ASLI & WAKTUNYA
+    setScanningIndex(null);
+    setStudents(realSortedData); 
+    setLangkah(realSteps);
+    setWaktuEksekusi(realTime.toFixed(4));
+    
+    let algoName = type === 'ipk' ? 'Bubble Sort' : type === 'nim' ? 'Selection Sort' : 'Merge Sort';
+    setActiveAlgo(type === 'ipk' ? 'bubble' : type === 'nim' ? 'selection' : 'merge');
+    
+    if (onNotify) onNotify('Pengurutan Selesai', `Data diurutkan dengan algoritma ${algoName}.`, 'success');
+    
+    setIsSortingIpk(false);
+    setIsSortingNim(false);
+    setIsSortingSemester(false);
   };
 
   const handleEditClick = (e: React.MouseEvent, student: Student) => {
@@ -359,7 +408,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           />
           <button
             onClick={handleSearch}
-            disabled={isSearching}
+            disabled={isSearching || isSortingIpk || isSortingNim || isSortingSemester}
             className="px-6 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all font-medium text-sm disabled:opacity-70 flex items-center gap-2 min-w-[90px] justify-center"
           >
             {isSearching ? <><Spinner /><span>Cari...</span></> : 'Cari'}
@@ -369,7 +418,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         <div className="flex gap-2 flex-wrap items-center">
           <button
             onClick={() => handleSort('ipk')}
-            disabled={isSortingIpk}
+            disabled={isSortingIpk || isSearching}
             className="relative p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(251,191,36,0.05)] hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] disabled:opacity-70 w-10 h-10"
           >
             {isSortingIpk ? <Spinner color="text-amber-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
@@ -381,7 +430,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
           <button
             onClick={() => handleSort('nim')}
-            disabled={isSortingNim}
+            disabled={isSortingNim || isSearching}
             className="relative p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.15)] disabled:opacity-70 w-10 h-10"
           >
             {isSortingNim ? <Spinner color="text-rose-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/></svg>}
@@ -393,7 +442,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
           <button
             onClick={() => handleSort('semester')}
-            disabled={isSortingSemester}
+            disabled={isSortingSemester || isSearching}
             className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] disabled:opacity-70 w-10 h-10"
           >
             {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 17 22 12"/></svg>}
