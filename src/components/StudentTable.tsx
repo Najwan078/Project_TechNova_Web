@@ -75,9 +75,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
   useEffect(() => { fetchStudents(); }, []);
 
-  // ========================================================
-  // FUNGSI PENCARIAN DENGAN VISUALISASI
-  // ========================================================
   const handleSearch = async () => {
     setIsSearching(true);
 
@@ -141,9 +138,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     return merge(mergeSort(data.slice(0, mid)), mergeSort(data.slice(mid)));
   };
 
-  // ========================================================
-  // FUNGSI SORTING DENGAN REAL-TIME ANIMATION VISUALIZER
-  // ========================================================
   const handleSort = async (type: 'ipk' | 'nim' | 'semester') => {
     if (students.length === 0) return;
 
@@ -155,7 +149,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     let realSteps = 0;
     let realTime = 0;
 
-    // 1. HITUNG WAKTU ASLI (REAL COMPUTATION TIME) DI BACKGROUND
     const t0 = performance.now();
     if (type === 'ipk') {
       for (let i = 0; i < realSortedData.length - 1; i++) {
@@ -186,21 +179,18 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       realSteps = Math.ceil(students.length * Math.log2(students.length || 1));
     }
     const t1 = performance.now();
-    realTime = (t1 - t0) > 0 ? (t1 - t0) : 0.0025; // Menghindari waktu 0 jika data sangat kecil
+    realTime = (t1 - t0) > 0 ? (t1 - t0) : 0.0025; 
 
-    // 2. VISUALISASI PERTUKARAN DATA DI FRONTEND
-    const MAX_VISUAL_STEPS = 20; // Batasi animasi agar tidak makan waktu 10 menit
+    const MAX_VISUAL_STEPS = 20; 
     let visualData = [...students];
     
     if (type === 'ipk') { 
-      // --- VISUAL BUBBLE SORT ---
       let visualCount = 0;
       for (let i = 0; i < visualData.length - 1 && visualCount < MAX_VISUAL_STEPS; i++) {
         for (let j = 0; j < visualData.length - i - 1 && visualCount < MAX_VISUAL_STEPS; j++) {
           setScanningIndex(j);
           await new Promise(r => setTimeout(r, 40));
           if (Number(visualData[j].ipk) < Number(visualData[j + 1].ipk)) {
-            // Swap visual
             let temp = visualData[j];
             visualData[j] = visualData[j + 1];
             visualData[j + 1] = temp;
@@ -212,7 +202,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         }
       }
     } else if (type === 'nim') { 
-       // --- VISUAL SELECTION SORT ---
        let visualCount = 0;
        for (let i = 0; i < visualData.length - 1 && visualCount < MAX_VISUAL_STEPS; i++) {
           let minIdx = i;
@@ -221,14 +210,13 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           
           for (let j = i + 1; j < visualData.length && visualCount < MAX_VISUAL_STEPS; j++) {
              setScanningIndex(j);
-             await new Promise(r => setTimeout(r, 20)); // Gerak cepat scan sisa data
+             await new Promise(r => setTimeout(r, 20)); 
              if (visualData[j].nim < visualData[minIdx].nim) {
                 minIdx = j;
              }
              visualCount++;
           }
           if (minIdx !== i) {
-            // Swap visual
             let temp = visualData[i];
             visualData[i] = visualData[minIdx];
             visualData[minIdx] = temp;
@@ -238,7 +226,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           }
        }
     } else if (type === 'semester') { 
-       // --- VISUAL MERGE SORT ---
        for (let i = 0; i < Math.min(visualData.length, 15); i += 2) {
           setScanningIndex(i);
           await new Promise(r => setTimeout(r, 60));
@@ -247,7 +234,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
        }
     }
 
-    // 3. SELESAI ANIMASI -> TAMPILKAN HASIL SORTING ASLI & WAKTUNYA
     setScanningIndex(null);
     setStudents(realSortedData); 
     setLangkah(realSteps);
@@ -488,7 +474,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
       </div>
 
-      <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative pb-2">
+      <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative pb-2 min-h-[200px]">
         <table className="w-full min-w-[800px] text-left">
           <thead>
             <tr className="border-b border-white/[0.06] bg-white/[0.02]">
@@ -513,7 +499,29 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                 </tr>
               ))
             ) : students.length === 0
-              ? <tr><td colSpan={6} className="text-center py-10 text-slate-500 italic">Data tidak tersedia.</td></tr>
+              ? (
+                /* ========================================================
+                   EMPTY STATE WOBBLE (DATA TIDAK DITEMUKAN)
+                   ======================================================== */
+                <tr>
+                  <td colSpan={6} className="py-16">
+                    <div className="flex flex-col items-center justify-center animate-wobble">
+                      <div className="w-20 h-20 mb-4 rounded-full bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-slate-500 relative">
+                        <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-rose-500"></div>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/>
+                        </svg>
+                      </div>
+                      <h3 className="text-white font-semibold text-lg mb-1">Data Tidak Ditemukan</h3>
+                      <p className="text-slate-500 text-sm max-w-xs text-center">
+                        {search 
+                          ? <span>Pencarian untuk <span className="text-cyan-400 font-bold">"{search}"</span> tidak membuahkan hasil. Coba periksa ejaan.</span> 
+                          : "Tidak ada data mahasiswa yang tersedia saat ini."}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )
               : students.map((student, index) => (
                 <tr
                   key={student.nim}
@@ -632,9 +640,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         document.body
       )}
 
-      {/* ========================================================
-          PANEL DETAIL ALGORITMA DENGAN TAMBAHAN WAKTU EKSEKUSI
-          ======================================================== */}
       {activeAlgo && activeDetails && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-4">
