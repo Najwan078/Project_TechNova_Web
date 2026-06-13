@@ -4,6 +4,7 @@ import StudentModal from './StudentModal';
 import AddStudentModal from './AddStudentModal';
 
 const API_URL = 'https://tech-nova-backend.vercel.app';
+const ITEMS_PER_PAGE = 10; // Jumlah data per halaman
 
 interface StudentTableProps {
   onNotify?: (title: string, desc: string, type: string) => void;
@@ -26,6 +27,9 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
+  // STATE PAGINASI (PAGINATION)
+  const [currentPage, setCurrentPage] = useState(1);
+
   // STATE METRIK & VISUALISASI ALGORITMA
   const [langkah, setLangkah] = useState<number>(0);
   const [waktuEksekusi, setWaktuEksekusi] = useState<string>('0.0000'); 
@@ -56,6 +60,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       .then(data => {
         const dataMahasiswa = data && data.data ? data.data : (Array.isArray(data) ? data : []);
         setStudents(dataMahasiswa);
+        setCurrentPage(1); // Reset ke halaman 1 saat ambil data baru
         
         const steps = data && data.langkah !== undefined ? data.langkah : 0;
         setLangkah(steps);
@@ -85,22 +90,29 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           searchType === 'nama' ? s.nama.toLowerCase().includes(targetStr) : s.jurusan.toLowerCase().includes(targetStr)
         );
         
-        const scanLimit = targetIndex === -1 ? Math.min(students.length - 1, 15) : targetIndex;
+        const scanLimit = targetIndex === -1 ? students.length - 1 : targetIndex;
 
         for (let i = 0; i <= scanLimit; i++) {
           setScanningIndex(i);
-          await new Promise(r => setTimeout(r, 80));
+          setCurrentPage(Math.floor(i / ITEMS_PER_PAGE) + 1); 
+          await new Promise(r => setTimeout(r, 60)); 
         }
       } else if (searchType === 'nim') {
-        setScanningIndex(Math.floor(students.length / 2));
+        let mid1 = Math.floor(students.length / 2);
+        setScanningIndex(mid1);
+        setCurrentPage(Math.floor(mid1 / ITEMS_PER_PAGE) + 1);
         await new Promise(r => setTimeout(r, 250));
-        setScanningIndex(Math.floor(students.length / 4));
+
+        let mid2 = Math.floor(students.length / 4);
+        setScanningIndex(mid2);
+        setCurrentPage(Math.floor(mid2 / ITEMS_PER_PAGE) + 1);
         await new Promise(r => setTimeout(r, 250));
         
         const targetStr = search.toLowerCase();
         let targetIndex = students.findIndex(s => s.nim.toLowerCase().includes(targetStr));
         if(targetIndex !== -1) {
           setScanningIndex(targetIndex);
+          setCurrentPage(Math.floor(targetIndex / ITEMS_PER_PAGE) + 1);
           await new Promise(r => setTimeout(r, 250));
         }
       }
@@ -189,6 +201,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       for (let i = 0; i < visualData.length - 1 && visualCount < MAX_VISUAL_STEPS; i++) {
         for (let j = 0; j < visualData.length - i - 1 && visualCount < MAX_VISUAL_STEPS; j++) {
           setScanningIndex(j);
+          setCurrentPage(Math.floor(j / ITEMS_PER_PAGE) + 1);
           await new Promise(r => setTimeout(r, 40));
           if (Number(visualData[j].ipk) < Number(visualData[j + 1].ipk)) {
             let temp = visualData[j];
@@ -196,6 +209,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             visualData[j + 1] = temp;
             setStudents([...visualData]);
             setScanningIndex(j + 1);
+            setCurrentPage(Math.floor((j + 1) / ITEMS_PER_PAGE) + 1);
             await new Promise(r => setTimeout(r, 40));
           }
           visualCount++;
@@ -206,10 +220,12 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
        for (let i = 0; i < visualData.length - 1 && visualCount < MAX_VISUAL_STEPS; i++) {
           let minIdx = i;
           setScanningIndex(i);
+          setCurrentPage(Math.floor(i / ITEMS_PER_PAGE) + 1);
           await new Promise(r => setTimeout(r, 60));
           
           for (let j = i + 1; j < visualData.length && visualCount < MAX_VISUAL_STEPS; j++) {
              setScanningIndex(j);
+             setCurrentPage(Math.floor(j / ITEMS_PER_PAGE) + 1);
              await new Promise(r => setTimeout(r, 20)); 
              if (visualData[j].nim < visualData[minIdx].nim) {
                 minIdx = j;
@@ -222,12 +238,14 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             visualData[minIdx] = temp;
             setStudents([...visualData]);
             setScanningIndex(i);
+            setCurrentPage(Math.floor(i / ITEMS_PER_PAGE) + 1);
             await new Promise(r => setTimeout(r, 60));
           }
        }
     } else if (type === 'semester') { 
        for (let i = 0; i < Math.min(visualData.length, 15); i += 2) {
           setScanningIndex(i);
+          setCurrentPage(Math.floor(i / ITEMS_PER_PAGE) + 1);
           await new Promise(r => setTimeout(r, 60));
           setScanningIndex(i+1);
           await new Promise(r => setTimeout(r, 60));
@@ -235,6 +253,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     }
 
     setScanningIndex(null);
+    setCurrentPage(1); 
     setStudents(realSortedData); 
     setLangkah(realSteps);
     setWaktuEksekusi(realTime.toFixed(4));
@@ -369,6 +388,12 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     return details[algo];
   };
 
+  // LOGIKA PAGINATION
+  const totalPages = Math.ceil(students.length / ITEMS_PER_PAGE) || 1;
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentStudents = students.slice(indexOfFirstItem, indexOfLastItem);
+
   const activeDetails = activeAlgo ? getAlgoDetails(activeAlgo, langkah, students.length) : null;
 
   return (
@@ -474,7 +499,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
       </div>
 
-      <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative pb-2 min-h-[200px]">
+      <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative min-h-[200px] flex flex-col">
         <table className="w-full min-w-[800px] text-left">
           <thead>
             <tr className="border-b border-white/[0.06] bg-white/[0.02]">
@@ -486,9 +511,11 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
               <th className="px-6 py-4 text-[11px] uppercase text-slate-500">Aksi</th>
             </tr>
           </thead>
-          <tbody>
+          
+          {/* UTAMA: Menggunakan key={currentPage} agar React memicu ulang animasi CSS cascading */}
+          <tbody key={currentPage}>
             {loading ? (
-              Array.from({ length: 6 }).map((_, i) => (
+              Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                 <tr key={i} className="border-b border-white/[0.03]">
                   <td className="px-6 py-4"><div className="h-3 w-24 rounded-full bg-white/[0.06] animate-pulse" /></td>
                   <td className="px-6 py-4 flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-white/[0.06] animate-pulse flex-shrink-0" /><div className="h-3 w-36 rounded-full bg-white/[0.06] animate-pulse" /></td>
@@ -500,9 +527,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
               ))
             ) : students.length === 0
               ? (
-                /* ========================================================
-                   EMPTY STATE WOBBLE (DATA TIDAK DITEMUKAN)
-                   ======================================================== */
                 <tr>
                   <td colSpan={6} className="py-16">
                     <div className="flex flex-col items-center justify-center animate-wobble">
@@ -522,43 +546,82 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                   </td>
                 </tr>
               )
-              : students.map((student, index) => (
-                <tr
-                  key={student.nim}
-                  onClick={() => setSelectedStudent(student)}
-                  className={`cursor-pointer border-b border-white/[0.03] transition-all duration-200 ${
-                    scanningIndex === index 
-                      ? 'bg-cyan-500/40 shadow-[inset_4px_0_0_0_#22d3ee] scale-[1.01] z-10 relative' 
-                      : 'row-glow hover:bg-white/[0.03]'
-                  }`}
-                  style={{ animation: 'fadeInUp 0.3s ease-out both' }}
-                >
-                  <td className="px-6 py-4 text-sm text-cyan-400">{student.nim}</td>
-                  <td className="px-6 py-4 text-sm text-white flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs flex-shrink-0">
-                      {student.nama?.charAt(0) ?? '?'}
-                    </div>
-                    {student.nama}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">{student.jurusan}</td>
-                  <td className={`px-6 py-4 text-sm font-bold ${getIpkColor(student.ipk)}`}>{Number(student.ipk).toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${getStatusBadge(student.status)}`}>
-                      {student.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <button
-                      onClick={(e) => handleEditClick(e, student)}
-                      className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg hover:bg-cyan-500/20 transition-all text-xs"
+              : currentStudents.map((student, index) => {
+                  const globalIndex = indexOfFirstItem + index; 
+                  
+                  return (
+                    <tr
+                      key={student.nim}
+                      onClick={() => setSelectedStudent(student)}
+                      className={`cursor-pointer border-b border-white/[0.03] transition-all duration-200 ${
+                        scanningIndex === globalIndex 
+                          ? 'bg-cyan-500/40 shadow-[inset_4px_0_0_0_#22d3ee] scale-[1.01] z-10 relative' 
+                          : 'row-glow hover:bg-white/[0.03]'
+                      }`}
+                      /* TAMBAHAN UTAMA: cubic-bezier performa tinggi & delay bertahap (index * 35ms) untuk efek cascading */
+                      style={{ 
+                        animation: 'fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+                        animationDelay: `${index * 35}ms`
+                      }}
                     >
-                      ✏ Edit
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <td className="px-6 py-4 text-sm text-cyan-400">{student.nim}</td>
+                      <td className="px-6 py-4 text-sm text-white flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs flex-shrink-0">
+                          {student.nama?.charAt(0) ?? '?'}
+                        </div>
+                        {student.nama}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-400">{student.jurusan}</td>
+                      <td className={`px-6 py-4 text-sm font-bold ${getIpkColor(student.ipk)}`}>{Number(student.ipk).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${getStatusBadge(student.status)}`}>
+                          {student.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        <button
+                          onClick={(e) => handleEditClick(e, student)}
+                          className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg hover:bg-cyan-500/20 transition-all text-xs"
+                        >
+                          ✏ Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
           </tbody>
         </table>
+
+        {!loading && students.length > 0 && (
+          <div className="mt-auto border-t border-white/[0.06] bg-white/[0.01] px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-slate-400">
+              Menampilkan <span className="font-bold text-cyan-400">{indexOfFirstItem + 1}</span> - <span className="font-bold text-cyan-400">{Math.min(indexOfLastItem, students.length)}</span> dari <span className="font-bold text-cyan-400">{students.length}</span> data
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1 || isSearching || isSortingIpk || isSortingNim || isSortingSemester}
+                className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs font-medium"
+              >
+                &larr; Prev
+              </button>
+              
+              <div className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium">
+                <span className="text-white px-2.5 py-1 rounded-md bg-white/[0.08] border border-white/[0.1]">{currentPage}</span>
+                <span className="text-slate-500">/ {totalPages}</span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages || isSearching || isSortingIpk || isSortingNim || isSortingSemester}
+                className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs font-medium"
+              >
+                Next &rarr;
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {editStudent && createPortal(
