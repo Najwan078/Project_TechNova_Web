@@ -269,10 +269,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         <p className="text-center text-slate-600 text-xs mt-8">© 2026 TechNova University. All rights reserved.</p>
       </div>
 
-      {/* --- EFEK LOADING MASUK (LOGIN) KEKINIAN --- */}
+      {/* --- EFEK LOADING MASUK (LOGIN) --- */}
       {isLoggingIn && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050510]/80 backdrop-blur-md transition-all duration-300 animate-in fade-in zoom-in-95">
-          {/* Spinner Keren dengan Ikon Login */}
+          {/* Spinner dengan Ikon Login */}
           <div className="relative w-20 h-20 mb-6">
             <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-cyan-400 rounded-full border-t-transparent animate-spin"></div>

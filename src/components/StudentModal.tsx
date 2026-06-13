@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createPortal } from 'react-dom'; // <--- TAMBAHAN PENTING
+import { createPortal } from 'react-dom';
 import { Student, getStatusColor, getStatusBg, getIpkColor } from '../data/students';
 import UserAvatar from './UserAvatar';
 
@@ -23,20 +23,24 @@ export default function StudentModal({ student, onClose }: StudentModalProps) {
     <div className="fixed inset-0 z-[100] overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-left">
         
+        {/* Backdrop / Latar Belakang Gelap Transparan */}
         <div
-          className="fixed inset-0 bg-black/60 animate-backdrop cursor-pointer"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-backdrop cursor-pointer"
           onClick={onClose}
         />
 
+        {/* Modal Content - Diubah menjadi Background Solid agar tidak tembus pandang */}
         <div
-          className="relative glass-strong rounded-3xl p-8 max-w-lg w-full animate-modal-popup my-8 shadow-2xl"
+          className="relative bg-[#0a0a20] border border-white/15 rounded-3xl p-8 max-w-lg w-full animate-modal-popup my-8 shadow-2xl"
           style={{
-            boxShadow: '0 0 80px rgba(0, 229, 255, 0.1), 0 0 160px rgba(139, 92, 246, 0.05)',
+            boxShadow: '0 0 80px rgba(0, 229, 255, 0.08), 0 0 160px rgba(139, 92, 246, 0.05)',
           }}
           onClick={e => e.stopPropagation()}
         >
+          {/* Top gradient line */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60 rounded-t-3xl" />
 
+          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/80 transition-all duration-300"
@@ -46,6 +50,7 @@ export default function StudentModal({ student, onClose }: StudentModalProps) {
             </svg>
           </button>
 
+          {/* Profile header */}
           <div className="flex items-center gap-5 mb-6 mt-2">
             <div
               className="rounded-2xl border border-white/[0.08] flex items-center justify-center overflow-hidden"
@@ -63,27 +68,29 @@ export default function StudentModal({ student, onClose }: StudentModalProps) {
             </div>
           </div>
 
+          {/* Info grid - Diberi background sedikit lebih terang dari background utama agar bertekstur */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="glass rounded-xl p-4 hover:-translate-y-1 transition-transform">
+            <div className="bg-[#0f0f2a] border border-white/[0.05] rounded-xl p-4 hover:-translate-y-1 transition-transform">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Jurusan</p>
               <p className="text-sm font-medium text-white">{student.jurusan}</p>
             </div>
-            <div className="glass rounded-xl p-4 hover:-translate-y-1 transition-transform">
+            <div className="bg-[#0f0f2a] border border-white/[0.05] rounded-xl p-4 hover:-translate-y-1 transition-transform">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Semester</p>
               <p className="text-sm font-medium text-white">Semester {student.semester}</p>
             </div>
-            <div className="glass rounded-xl p-4 hover:-translate-y-1 transition-transform">
+            <div className="bg-[#0f0f2a] border border-white/[0.05] rounded-xl p-4 hover:-translate-y-1 transition-transform">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">IPK</p>
               <p className={`text-lg font-bold font-[Outfit] ${getIpkColor(student.ipk)}`}>
                 {student.ipk.toFixed(2)}
               </p>
             </div>
-            <div className="glass rounded-xl p-4 hover:-translate-y-1 transition-transform">
+            <div className="bg-[#0f0f2a] border border-white/[0.05] rounded-xl p-4 hover:-translate-y-1 transition-transform">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Tanggal Masuk</p>
               <p className="text-sm font-medium text-white">{student.tanggalMasuk}</p>
             </div>
           </div>
 
+          {/* Contact info */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm group">
               <div className="w-8 h-8 rounded-lg bg-white/[0.04] group-hover:bg-cyan-500/20 group-hover:text-cyan-400 transition-colors flex items-center justify-center text-slate-500 border border-transparent group-hover:border-cyan-500/30">
