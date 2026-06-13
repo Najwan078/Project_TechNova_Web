@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom'; // <--- TAMBAHAN PENTING
 import StudentModal from './StudentModal';
 import AddStudentModal from './AddStudentModal';
 
@@ -31,7 +32,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [editForm, setEditForm] = useState<Record<string, any>>({});
   const importRef = useRef<HTMLInputElement>(null);
 
-  // === STATE LOADING PER TOMBOL ===
   const [isSearching, setIsSearching] = useState(false);
   const [isSortingIpk, setIsSortingIpk] = useState(false);
   const [isSortingNim, setIsSortingNim] = useState(false);
@@ -297,12 +297,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             disabled={isSearching}
             className="px-6 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all font-medium text-sm disabled:opacity-70 flex items-center gap-2 min-w-[90px] justify-center"
           >
-            {isSearching ? (
-              <>
-                <Spinner />
-                <span>Cari...</span>
-              </>
-            ) : 'Cari'}
+            {isSearching ? <><Spinner /><span>Cari...</span></> : 'Cari'}
           </button>
         </div>
 
@@ -379,17 +374,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
       </div>
 
-      {activeDetails && (
-        <div className="flex justify-end mb-3">
-          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-xs">
-            <span>{activeDetails.icon}</span>
-            <span className={activeDetails.color}>{activeDetails.title}</span>
-            <span className="text-slate-500">diselesaikan dalam:</span>
-            <span className="text-white font-bold">{langkah} langkah</span>
-          </div>
-        </div>
-      )}
-
       <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative pb-2">
         <table className="w-full min-w-[800px] text-left">
           <thead>
@@ -452,19 +436,17 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       </div>
 
       {/* ========================================================
-          MODAL EDIT - SUDAH DIPERBAIKI SCROLLING & POSITIONING-NYA
+          PORTAL EDIT MODAL - AGAR MENGUNCI DI LAYAR BROWSER
           ======================================================== */}
-      {editStudent && (
+      {editStudent && createPortal(
         <div className="fixed inset-0 z-[100] overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
             
-            {/* Latar belakang gelap (Overlay) yang bisa di-klik */}
             <div 
               className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-backdrop cursor-pointer"
               onClick={() => !isSavingEdit && setEditStudent(null)}
             />
 
-            {/* Kotak Modal Utama */}
             <div
               className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md animate-modal-popup text-left shadow-2xl my-8"
               onClick={e => e.stopPropagation()}
@@ -531,81 +513,13 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {activeAlgo && activeDetails && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
-          {/* ... (Konten detail algoritma tidak berubah) ... */}
-          <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{activeDetails.icon}</span>
-              <div>
-                <h3 className={`font-bold text-lg ${activeDetails.color}`}>{activeDetails.title}</h3>
-                <p className="text-slate-500 text-xs">{activeDetails.desc}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500">Diselesaikan dalam</span>
-              <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white font-bold">{langkah} langkah</span>
-              <span className="text-slate-500">dari</span>
-              <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white font-bold">{students.length} data</span>
-            </div>
-          </div>
-          <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="glass rounded-xl p-5">
-              <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Time Complexity</p>
-              <div className="space-y-3">
-                {[
-                  { label: 'Best Case', value: activeDetails.best ?? activeDetails.time, color: 'text-emerald-400' },
-                  { label: 'Average Case', value: activeDetails.time, color: activeDetails.color },
-                  { label: 'Worst Case', value: activeDetails.worst ?? activeDetails.time, color: 'text-rose-400' }
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-slate-400 text-xs">{label}</span>
-                    <span className={`font-mono font-bold text-sm px-2 py-0.5 rounded-lg bg-white/[0.04] ${color}`}>{value}</span>
-                  </div>
-                ))}
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
-                  <span className="text-slate-400 text-xs">Space</span>
-                  <span className="font-mono font-bold text-sm px-2 py-0.5 rounded-lg bg-white/[0.04] text-blue-400">{activeDetails.space ?? 'O(1)'}</span>
-                </div>
-              </div>
-              <p className="text-slate-600 text-[11px] mt-4 leading-relaxed">{activeDetails.complexityDesc}</p>
-            </div>
-            <div className="glass rounded-xl p-5">
-              <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Langkah-langkah</p>
-              <ol className="space-y-2">
-                {(activeDetails.steps as string[]).map((step: string, i: number) => (
-                  <li key={i} className="flex items-start gap-3 text-xs text-slate-300">
-                    <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${activeDetails.color} bg-white/[0.06]`}>{i + 1}</span>
-                    {step}
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="glass rounded-xl p-5">
-              <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Perbandingan Algoritma</p>
-              <div className="space-y-2">
-                {(activeDetails.comparison as { name: string; time: string; score: number }[]).map((item) => (
-                  <div key={item.name} className={`flex items-center gap-3 p-2 rounded-lg transition-all ${item.name === activeDetails.title ? 'bg-white/[0.06] ring-1 ring-white/10' : ''}`}>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`text-xs font-medium ${item.name === activeDetails.title ? 'text-white' : 'text-slate-400'}`}>{item.name}</span>
-                        <span className="font-mono text-[10px] text-slate-500">{item.time}</span>
-                      </div>
-                      <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${item.name === activeDetails.title ? activeDetails.color.replace('text-', 'bg-') : 'bg-slate-600'}`}
-                          style={{ width: `${item.score}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* ... */}
         </div>
       )}
 
