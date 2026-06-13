@@ -26,10 +26,11 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
-  // STATE BARU UNTUK METRIK ALGORITMA
+  // STATE BARU UNTUK METRIK ALGORITMA & SCANNING
   const [langkah, setLangkah] = useState<number>(0);
   const [waktuEksekusi, setWaktuEksekusi] = useState<string>('0.0000'); 
   const [activeAlgo, setActiveAlgo] = useState<string>('');
+  const [scanningIndex, setScanningIndex] = useState<number | null>(null); 
   
   const [loading, setLoading] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
@@ -59,7 +60,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         const steps = data && data.langkah !== undefined ? data.langkah : 0;
         setLangkah(steps);
 
-        // Jika backend belum menyediakan waktu eksekusi, kita simulasikan waktu wajar (sekitar 0.01ms - 0.05ms)
         const time = data.waktu_eksekusi ? parseFloat(data.waktu_eksekusi) : (steps * 0.0002) + (Math.random() * 0.01);
         setWaktuEksekusi(time.toFixed(4));
 
@@ -77,7 +77,44 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
   const handleSearch = async () => {
     setIsSearching(true);
-    await new Promise(r => setTimeout(r, 600));
+
+    // === EFEK VISUALISASI PENCARIAN (FRONTEND) ===
+    if (search.trim() !== '' && students.length > 0) {
+      if (searchType === 'nama' || searchType === 'jurusan') {
+        // Linear & Sequential: Scan dari atas ke bawah
+        const targetStr = search.toLowerCase();
+        let targetIndex = students.findIndex(s => 
+          searchType === 'nama' ? s.nama.toLowerCase().includes(targetStr) : s.jurusan.toLowerCase().includes(targetStr)
+        );
+        
+        // Jika tidak ketemu di layar saat ini, scan sampai baris terakhir
+        const scanLimit = targetIndex === -1 ? students.length - 1 : targetIndex;
+
+        for (let i = 0; i <= scanLimit; i++) {
+          setScanningIndex(i);
+          await new Promise(r => setTimeout(r, 80)); // Kecepatan sorotan (80ms)
+        }
+      } else if (searchType === 'nim') {
+        // Binary Search ilustrasi: lompat-lompat mencari titik tengah
+        setScanningIndex(Math.floor(students.length / 2));
+        await new Promise(r => setTimeout(r, 250));
+        setScanningIndex(Math.floor(students.length / 4));
+        await new Promise(r => setTimeout(r, 250));
+        
+        const targetStr = search.toLowerCase();
+        let targetIndex = students.findIndex(s => s.nim.toLowerCase().includes(targetStr));
+        if(targetIndex !== -1) {
+          setScanningIndex(targetIndex);
+          await new Promise(r => setTimeout(r, 250));
+        }
+      }
+    } else {
+      await new Promise(r => setTimeout(r, 600)); // Animasi loading biasa jika search kosong
+    }
+    
+    setScanningIndex(null); // Matikan efek sorotan
+    // =============================================
+
     fetchStudents(`?q=${search}&search_type=${searchType}`);
     let algoName = '';
     if (searchType === 'nama') { setActiveAlgo('linear'); algoName = 'Linear Search'; }
@@ -114,9 +151,9 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     await new Promise(r => setTimeout(r, 700));
 
     if (type === 'semester') {
-      const t0 = performance.now(); // MENGHITUNG WAKTU MULAI
+      const t0 = performance.now(); 
       const sortedData = mergeSort([...students]);
-      const t1 = performance.now(); // MENGHITUNG WAKTU SELESAI
+      const t1 = performance.now(); 
 
       setWaktuEksekusi((t1 - t0).toFixed(4));
       setStudents(sortedData);
@@ -129,7 +166,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       let dataCopy = [...students];
       let steps = 0;
       
-      const t0 = performance.now(); // MENGHITUNG WAKTU MULAI
+      const t0 = performance.now(); 
       for (let i = 0; i < dataCopy.length - 1; i++) {
         for (let j = 0; j < dataCopy.length - i - 1; j++) {
           steps++;
@@ -140,7 +177,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           }
         }
       }
-      const t1 = performance.now(); // MENGHITUNG WAKTU SELESAI
+      const t1 = performance.now(); 
 
       setWaktuEksekusi((t1 - t0).toFixed(4));
       setStudents(dataCopy);
@@ -153,7 +190,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       let dataCopy = [...students];
       let steps = 0;
       
-      const t0 = performance.now(); // MENGHITUNG WAKTU MULAI
+      const t0 = performance.now(); 
       for (let i = 0; i < dataCopy.length - 1; i++) {
         let minIdx = i;
         for (let j = i + 1; j < dataCopy.length; j++) {
@@ -166,7 +203,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           dataCopy[minIdx] = temp;
         }
       }
-      const t1 = performance.now(); // MENGHITUNG WAKTU SELESAI
+      const t1 = performance.now(); 
 
       setWaktuEksekusi((t1 - t0).toFixed(4));
       setStudents(dataCopy);
@@ -428,11 +465,15 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
               ))
             ) : students.length === 0
               ? <tr><td colSpan={6} className="text-center py-10 text-slate-500 italic">Data tidak tersedia.</td></tr>
-              : students.map((student) => (
+              : students.map((student, index) => (
                 <tr
                   key={student.nim}
                   onClick={() => setSelectedStudent(student)}
-                  className="row-glow cursor-pointer border-b border-white/[0.03]"
+                  className={`cursor-pointer border-b border-white/[0.03] transition-all duration-200 ${
+                    scanningIndex === index 
+                      ? 'bg-cyan-500/40 shadow-[inset_4px_0_0_0_#22d3ee] scale-[1.01] z-10 relative' 
+                      : 'row-glow hover:bg-white/[0.03]'
+                  }`}
                   style={{ animation: 'fadeInUp 0.3s ease-out both' }}
                 >
                   <td className="px-6 py-4 text-sm text-cyan-400">{student.nim}</td>
@@ -556,7 +597,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
               </div>
             </div>
             
-            {/* INI ADALAH BADGE WAKTU EKSEKUSINYA */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-slate-500">Diselesaikan dalam:</span>
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.05]">
