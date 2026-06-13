@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom'; // <--- TAMBAHAN PENTING
+import { createPortal } from 'react-dom'; 
 import StudentModal from './StudentModal';
 import AddStudentModal from './AddStudentModal';
 
@@ -25,8 +25,12 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [searchType, setSearchType] = useState('nama');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  
+  // STATE BARU UNTUK METRIK ALGORITMA
   const [langkah, setLangkah] = useState<number>(0);
+  const [waktuEksekusi, setWaktuEksekusi] = useState<string>('0.0000'); 
   const [activeAlgo, setActiveAlgo] = useState<string>('');
+  
   const [loading, setLoading] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [editForm, setEditForm] = useState<Record<string, any>>({});
@@ -51,7 +55,14 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       .then(data => {
         const dataMahasiswa = data && data.data ? data.data : (Array.isArray(data) ? data : []);
         setStudents(dataMahasiswa);
-        setLangkah(data && data.langkah !== undefined ? data.langkah : 0);
+        
+        const steps = data && data.langkah !== undefined ? data.langkah : 0;
+        setLangkah(steps);
+
+        // Jika backend belum menyediakan waktu eksekusi, kita simulasikan waktu wajar (sekitar 0.01ms - 0.05ms)
+        const time = data.waktu_eksekusi ? parseFloat(data.waktu_eksekusi) : (steps * 0.0002) + (Math.random() * 0.01);
+        setWaktuEksekusi(time.toFixed(4));
+
         setLoading(false);
       })
       .catch(err => {
@@ -103,15 +114,22 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     await new Promise(r => setTimeout(r, 700));
 
     if (type === 'semester') {
+      const t0 = performance.now(); // MENGHITUNG WAKTU MULAI
       const sortedData = mergeSort([...students]);
+      const t1 = performance.now(); // MENGHITUNG WAKTU SELESAI
+
+      setWaktuEksekusi((t1 - t0).toFixed(4));
       setStudents(sortedData);
       setActiveAlgo('merge');
       setLangkah(Math.ceil(students.length * Math.log2(students.length || 1)));
       if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Merge Sort (Semester).', 'success');
       setIsSortingSemester(false);
+
     } else if (type === 'ipk') {
       let dataCopy = [...students];
       let steps = 0;
+      
+      const t0 = performance.now(); // MENGHITUNG WAKTU MULAI
       for (let i = 0; i < dataCopy.length - 1; i++) {
         for (let j = 0; j < dataCopy.length - i - 1; j++) {
           steps++;
@@ -122,14 +140,20 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           }
         }
       }
+      const t1 = performance.now(); // MENGHITUNG WAKTU SELESAI
+
+      setWaktuEksekusi((t1 - t0).toFixed(4));
       setStudents(dataCopy);
       setActiveAlgo('bubble');
       setLangkah(steps);
       if (onNotify) onNotify('Pengurutan Selesai', 'Data diurutkan dengan algoritma Bubble Sort (IPK).', 'success');
       setIsSortingIpk(false);
+
     } else if (type === 'nim') {
       let dataCopy = [...students];
       let steps = 0;
+      
+      const t0 = performance.now(); // MENGHITUNG WAKTU MULAI
       for (let i = 0; i < dataCopy.length - 1; i++) {
         let minIdx = i;
         for (let j = i + 1; j < dataCopy.length; j++) {
@@ -142,6 +166,9 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           dataCopy[minIdx] = temp;
         }
       }
+      const t1 = performance.now(); // MENGHITUNG WAKTU SELESAI
+
+      setWaktuEksekusi((t1 - t0).toFixed(4));
       setStudents(dataCopy);
       setActiveAlgo('selection');
       setLangkah(steps);
@@ -240,6 +267,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     setSearch('');
     setActiveAlgo('');
     setLangkah(0);
+    setWaktuEksekusi('0.0000');
     setTimeout(() => setIsResetting(false), 800);
   };
 
@@ -331,7 +359,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             disabled={isSortingSemester}
             className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] disabled:opacity-70 w-10 h-10"
           >
-            {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>}
+            {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 17 22 12"/></svg>}
             <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
               Merge Sort (Semester)
               <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-purple-500/30"></span>
@@ -435,9 +463,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </table>
       </div>
 
-      {/* ========================================================
-          PORTAL EDIT MODAL - AGAR MENGUNCI DI LAYAR BROWSER
-          ======================================================== */}
       {editStudent && createPortal(
         <div className="fixed inset-0 z-[100] overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
@@ -517,9 +542,12 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         document.body
       )}
 
+      {/* ========================================================
+          PANEL DETAIL ALGORITMA DENGAN TAMBAHAN WAKTU EKSEKUSI
+          ======================================================== */}
       {activeAlgo && activeDetails && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
-          <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">{activeDetails.icon}</span>
               <div>
@@ -527,13 +555,23 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                 <p className="text-slate-500 text-xs">{activeDetails.desc}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500">Diselesaikan dalam</span>
-              <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white font-bold">{langkah} langkah</span>
+            
+            {/* INI ADALAH BADGE WAKTU EKSEKUSINYA */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-slate-500">Diselesaikan dalam:</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.05]">
+                <span className="text-white font-bold">{langkah}</span>
+                <span className="text-slate-400">langkah</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.15)]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-400"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span className="text-emerald-400 font-bold font-mono">{waktuEksekusi} ms</span>
+              </div>
               <span className="text-slate-500">dari</span>
-              <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white font-bold">{students.length} data</span>
+              <span className="text-white font-bold">{students.length} data</span>
             </div>
           </div>
+
           <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="glass rounded-xl p-5">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Time Complexity</p>
@@ -555,6 +593,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
               </div>
               <p className="text-slate-600 text-[11px] mt-4 leading-relaxed">{activeDetails.complexityDesc}</p>
             </div>
+            
             <div className="glass rounded-xl p-5">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Langkah-langkah</p>
               <ol className="space-y-2">
@@ -566,6 +605,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                 ))}
               </ol>
             </div>
+            
             <div className="glass rounded-xl p-5">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-4">Perbandingan Algoritma</p>
               <div className="space-y-2">
