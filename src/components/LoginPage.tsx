@@ -186,7 +186,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                     <span className="absolute top-1/2 -translate-y-1/2 text-slate-500" style={{ left: '12px' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     </span>
-                    <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="nama@technova.ac.id" style={inputStyle} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pr-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300" />
+                    <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="nama@technova.ac.id" style={inputStyle} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pr-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                   </div>
                 </div>
 
@@ -196,7 +196,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                     <span className="absolute top-1/2 -translate-y-1/2 text-slate-500" style={{ left: '12px' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     </span>
-                    <input type={showPassword ? "text" : "password"} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" style={inputStyle} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300" />
+                    <input type={showPassword ? "text" : "password"} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" style={inputStyle} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                     <EyeToggle />
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                   </button>
                 </div>
 
-                <button type="submit" disabled={isLoggingIn} className="w-full btn-gradient text-white font-semibold py-3 rounded-xl mt-2 active:scale-[0.98] transition-transform disabled:opacity-70 disabled:cursor-not-allowed">
+                <button type="submit" disabled={isLoggingIn} className="w-full btn-gradient text-white font-semibold py-3 rounded-xl mt-2 hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed">
                   {isLoggingIn ? 'Memproses...' : 'Masuk'}
                 </button>
               </div>
@@ -230,35 +230,35 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                     <span className="absolute top-1/2 -translate-y-1/2 text-slate-500" style={{ left: '12px' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    <input type="text" value={signupName} onChange={e => setSignupName(e.target.value)} placeholder="Nama lengkap Anda" style={inputStyle} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pr-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300" />
+                    <input type="text" value={signupName} onChange={e => setSignupName(e.target.value)} placeholder="Nama lengkap Anda" style={inputStyle} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pr-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">NIM</label>
-                    <input type="text" value={signupNim} onChange={e => setSignupNim(e.target.value)} placeholder="2024xxx" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300" />
+                    <input type="text" value={signupNim} onChange={e => setSignupNim(e.target.value)} placeholder="2024xxx" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Email</label>
-                    <input type="email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} placeholder="email@ac.id" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300" />
+                    <input type="email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} placeholder="email@ac.id" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Password</label>
                   <div className="relative">
-                    <input type={showPassword ? "text" : "password"} value={signupPassword} onChange={e => setSignupPassword(e.target.value)} placeholder="Min. 8 karakter" style={{paddingLeft: '15px', paddingRight: '45px'}} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300" />
+                    <input type={showPassword ? "text" : "password"} value={signupPassword} onChange={e => setSignupPassword(e.target.value)} placeholder="Min. 8 karakter" style={{paddingLeft: '15px', paddingRight: '45px'}} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 text-white placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                     <EyeToggle />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Konfirmasi Password</label>
-                  <input type="password" value={signupConfirm} onChange={e => setSignupConfirm(e.target.value)} placeholder="Ulangi password" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white focus:outline-none input-glow transition-all duration-300" />
+                  <input type="password" value={signupConfirm} onChange={e => setSignupConfirm(e.target.value)} placeholder="Ulangi password" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white focus:outline-none input-glow transition-all duration-300 focus:-translate-y-0.5" />
                 </div>
 
-                <button type="submit" className="w-full btn-gradient text-white font-semibold py-3 rounded-xl mt-2 active:scale-[0.98] transition-transform">Daftar Sekarang</button>
+                <button type="submit" className="w-full btn-gradient text-white font-semibold py-3 rounded-xl mt-2 hover:scale-[1.02] active:scale-95 transition-all duration-300">Daftar Sekarang</button>
               </div>
               <div className="mt-6 text-center">
                 <p className="text-slate-500 text-sm">Sudah punya akun? <button type="button" onClick={toggleForm} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">Sign In</button></p>
