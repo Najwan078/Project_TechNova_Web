@@ -292,7 +292,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             placeholder="Ketik nama, NIM, atau jurusan..."
             className="w-full min-w-[200px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-4 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50"
           />
-          {/* TOMBOL CARI */}
           <button
             onClick={handleSearch}
             disabled={isSearching}
@@ -308,60 +307,36 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
 
         <div className="flex gap-2 flex-wrap items-center">
-          {/* TOMBOL BUBBLE SORT (IPK) */}
           <button
             onClick={() => handleSort('ipk')}
             disabled={isSortingIpk}
             className="relative p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(251,191,36,0.05)] hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] disabled:opacity-70 w-10 h-10"
           >
-            {isSortingIpk ? (
-              <Spinner color="text-amber-400" />
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
+            {isSortingIpk ? <Spinner color="text-amber-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
               Bubble Sort (IPK)
               <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-amber-500/30"></span>
             </span>
           </button>
 
-          {/* TOMBOL SELECTION SORT (NIM) */}
           <button
             onClick={() => handleSort('nim')}
             disabled={isSortingNim}
             className="relative p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.15)] disabled:opacity-70 w-10 h-10"
           >
-            {isSortingNim ? (
-              <Spinner color="text-rose-400" />
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform">
-                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>
-                <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
-                <line x1="20" y1="12" x2="22" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/>
-              </svg>
-            )}
+            {isSortingNim ? <Spinner color="text-rose-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/></svg>}
             <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-rose-500/30 text-rose-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
               Selection Sort (NIM)
               <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-rose-500/30"></span>
             </span>
           </button>
 
-          {/* TOMBOL MERGE SORT (SEMESTER) */}
           <button
             onClick={() => handleSort('semester')}
             disabled={isSortingSemester}
             className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] disabled:opacity-70 w-10 h-10"
           >
-            {isSortingSemester ? (
-              <Spinner color="text-purple-400" />
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-                <polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
-              </svg>
-            )}
+            {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>}
             <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-20">
               Merge Sort (Semester)
               <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-purple-500/30"></span>
@@ -370,7 +345,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
           <div className="w-px h-8 bg-white/[0.08] mx-1" />
 
-          {/* TOMBOL TAMBAH */}
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium"
@@ -378,47 +352,29 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             + Tambah
           </button>
 
-          {/* TOMBOL EXPORT */}
           <button
             onClick={handleExport}
             disabled={isExporting}
             className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
           >
-            {isExporting ? (
-              <>
-                <Spinner color="text-blue-400" />
-                <span>Exporting...</span>
-              </>
-            ) : '⬇ Export JSON'}
+            {isExporting ? <><Spinner color="text-blue-400" /><span>Exporting...</span></> : '⬇ Export JSON'}
           </button>
 
-          {/* TOMBOL IMPORT */}
           <button
             onClick={() => importRef.current?.click()}
             disabled={isImporting}
             className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
           >
-            {isImporting ? (
-              <>
-                <Spinner color="text-violet-400" />
-                <span>Importing...</span>
-              </>
-            ) : '⬆ Import JSON'}
+            {isImporting ? <><Spinner color="text-violet-400" /><span>Importing...</span></> : '⬆ Import JSON'}
           </button>
           <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
 
-          {/* TOMBOL RESET */}
           <button
             onClick={handleReset}
             disabled={isResetting}
             className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center"
           >
-            {isResetting ? (
-              <>
-                <Spinner color="text-slate-400" />
-                <span>Reset...</span>
-              </>
-            ) : 'Reset'}
+            {isResetting ? <><Spinner color="text-slate-400" /><span>Reset...</span></> : 'Reset'}
           </button>
         </div>
       </div>
@@ -434,7 +390,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
       )}
 
-      {/* === BAGIAN YANG DIPERBAIKI (TABLE WRAPPER UNTUK MOBILE SCROLLING) === */}
       <div className="glass rounded-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent relative pb-2">
         <table className="w-full min-w-[800px] text-left">
           <thead>
@@ -496,79 +451,92 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </table>
       </div>
 
-      {/* MODAL EDIT — tombol Simpan dengan loading state */}
+      {/* ========================================================
+          MODAL EDIT - SUDAH DIPERBAIKI SCROLLING & POSITIONING-NYA
+          ======================================================== */}
       {editStudent && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-backdrop"
-          onClick={() => !isSavingEdit && setEditStudent(null)}
-        >
-          <div
-            className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md animate-modal-popup max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-500/20"
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 className="text-white font-bold text-lg mb-4">✏ Edit Mahasiswa</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="text-slate-400 text-xs mb-1 block">NIM (tidak bisa diubah)</label>
-                <input
-                  value={editStudent.nim}
-                  disabled
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-slate-500 text-sm"
-                />
-              </div>
-              {(['nama', 'jurusan', 'semester', 'ipk'] as const).map(field => (
-                <div key={field}>
-                  <label className="text-slate-400 text-xs mb-1 block capitalize">{field}</label>
+        <div className="fixed inset-0 z-[100] overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
+            
+            {/* Latar belakang gelap (Overlay) yang bisa di-klik */}
+            <div 
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-backdrop cursor-pointer"
+              onClick={() => !isSavingEdit && setEditStudent(null)}
+            />
+
+            {/* Kotak Modal Utama */}
+            <div
+              className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md animate-modal-popup text-left shadow-2xl my-8"
+              onClick={e => e.stopPropagation()}
+            >
+              <h2 className="text-white font-bold text-lg mb-4">✏ Edit Mahasiswa</h2>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-slate-400 text-xs mb-1 block">NIM (tidak bisa diubah)</label>
                   <input
-                    value={editForm[field] ?? ''}
-                    onChange={e => setEditForm((f: Record<string, any>) => ({ ...f, [field]: e.target.value }))}
-                    disabled={isSavingEdit}
-                    className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-cyan-400/50 disabled:opacity-60"
+                    value={editStudent.nim}
+                    disabled
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-slate-500 text-sm cursor-not-allowed"
                   />
                 </div>
-              ))}
-              <div>
-                <label className="text-slate-400 text-xs mb-1 block">Status</label>
-                <select
-                  value={editForm['status'] ?? ''}
-                  onChange={e => setEditForm((f: Record<string, any>) => ({ ...f, status: e.target.value }))}
+                {(['nama', 'jurusan', 'semester', 'ipk'] as const).map(field => (
+                  <div key={field}>
+                    <label className="text-slate-400 text-xs mb-1 block capitalize">{field}</label>
+                    <input
+                      value={editForm[field] ?? ''}
+                      onChange={e => setEditForm((f: Record<string, any>) => ({ ...f, [field]: e.target.value }))}
+                      disabled={isSavingEdit}
+                      className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-cyan-400/50 disabled:opacity-60"
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-slate-400 text-xs mb-1 block">Status</label>
+                  <select
+                    value={editForm['status'] ?? ''}
+                    onChange={e => setEditForm((f: Record<string, any>) => ({ ...f, status: e.target.value }))}
+                    disabled={isSavingEdit}
+                    className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none disabled:opacity-60 cursor-pointer"
+                  >
+                    <option value="Aktif">Aktif</option>
+                    <option value="Cuti">Cuti</option>
+                    <option value="Lulus">Lulus</option>
+                    <option value="Drop Out">Drop Out</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setEditStudent(null)}
                   disabled={isSavingEdit}
-                  className="w-full bg-slate-800 border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm focus:outline-none disabled:opacity-60"
+                  className="flex-1 px-4 py-2 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] hover:text-white transition-all text-sm disabled:opacity-50"
                 >
-                  <option value="Aktif">Aktif</option>
-                  <option value="Cuti">Cuti</option>
-                  <option value="Lulus">Lulus</option>
-                  <option value="Drop Out">Drop Out</option>
-                </select>
+                  Batal
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  disabled={isSavingEdit}
+                  className="flex-1 px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all text-sm font-medium disabled:opacity-70 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,229,255,0.15)]"
+                >
+                  {isSavingEdit ? (
+                    <>
+                      <Spinner color="text-cyan-400" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : 'Simpan'}
+                </button>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setEditStudent(null)}
-                disabled={isSavingEdit}
-                className="flex-1 px-4 py-2 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-50"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleEditSave}
-                disabled={isSavingEdit}
-                className="flex-1 px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all text-sm font-medium disabled:opacity-70 flex items-center justify-center gap-2"
-              >
-                {isSavingEdit ? (
-                  <>
-                    <Spinner color="text-cyan-400" />
-                    <span>Menyimpan...</span>
-                  </>
-                ) : 'Simpan'}
-              </button>
-            </div>
+
           </div>
         </div>
       )}
 
       {activeAlgo && activeDetails && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
+          {/* ... (Konten detail algoritma tidak berubah) ... */}
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl">{activeDetails.icon}</span>
