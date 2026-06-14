@@ -6,7 +6,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const API_URL = 'https://tech-nova-backend.vercel.app';
-const ITEMS_PER_PAGE = 10; // Jumlah data per halaman
+const ITEMS_PER_PAGE = 10; 
 
 interface StudentTableProps {
   onNotify?: (title: string, desc: string, type: string) => void;
@@ -14,7 +14,6 @@ interface StudentTableProps {
 
 import { Student } from '../data/students';
 
-// Spinner kecil reusable
 const Spinner = ({ color = 'text-current' }: { color?: string }) => (
   <svg className={`animate-spin h-4 w-4 ${color}`} viewBox="0 0 24 24" fill="none">
     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -807,7 +806,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         document.body
       )}
 
-      {/* KOTAK UNGU ALGORITMA TETAP ADA */}
       {activeAlgo && activeDetails && students.length > 0 && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-4">
