@@ -347,10 +347,8 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     }
   };
 
-  // =========================================================
-  // FUNGSI 1: EXPORT KE JSON (UNTUK BACKUP DATABASE)
-  // =========================================================
-  const handleExport = async () => {
+  // EXPORT JSON
+  const handleExportJSON = async () => {
     setIsExporting(true);
     try {
       const res = await fetch(`${API_URL}/api/mahasiswa/export`);
@@ -360,10 +358,10 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Data_Mahasiswa_JSON_${new Date().getTime()}.json`;
+      a.download = `Data_Mahasiswa_Backup_${new Date().getTime()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      if (onNotify) onNotify('Export JSON Berhasil', 'Data berhasil diexport ke format JSON untuk backup.', 'success');
+      if (onNotify) onNotify('Export JSON Berhasil', 'Data berhasil diunduh dalam format JSON.', 'success');
     } catch {
       if (onNotify) onNotify('Export Gagal', 'Gagal mengexport data JSON.', 'warning');
     } finally {
@@ -371,18 +369,15 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     }
   };
 
-  // =========================================================
-  // FUNGSI 2: EXPORT KE PDF (UNTUK LAPORAN / PRINT)
-  // =========================================================
+  // EXPORT PDF
   const handleExportPDF = () => {
     if (students.length === 0) {
-      if (onNotify) onNotify('Data Kosong', 'Tidak ada data untuk diexport ke PDF.', 'warning');
+      if (onNotify) onNotify('Data Kosong', 'Tidak ada data untuk dicetak.', 'warning');
       return;
     }
 
     try {
       const doc = new jsPDF();
-      
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(16);
       doc.text("LAPORAN DATA MAHASISWA", 14, 15);
@@ -404,12 +399,12 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         body: tableRows,
         startY: 26,
         theme: 'grid',
-        headStyles: { fillColor: [14, 116, 144] }, // Warna Cyan Gelap khas TechNova
+        headStyles: { fillColor: [14, 116, 144] }, 
         styles: { fontSize: 10, cellPadding: 3 }
       });
 
-      doc.save(`Laporan_Mahasiswa_PDF_${new Date().getTime()}.pdf`);
-      if (onNotify) onNotify('Export PDF Berhasil', 'Laporan PDF berhasil diunduh.', 'success');
+      doc.save(`Laporan_Mahasiswa_${new Date().getTime()}.pdf`);
+      if (onNotify) onNotify('Export PDF Berhasil', 'Laporan berhasil diunduh.', 'success');
     } catch (error) {
       console.error(error);
       if (onNotify) onNotify('Export Gagal', 'Gagal membuat file PDF.', 'warning');
@@ -522,7 +517,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           </button>
         </div>
 
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex gap-2 flex-wrap items-center z-50">
           
           <button
             title="Bubble Sort (Berdasarkan IPK)"
@@ -561,27 +556,33 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           </button>
 
           {/* =======================================================
-              TOMBOL EXPORT PDF (TOMBOL BARU)
+              DROPDOWN MENU EXPORT (GABUNGAN PDF & JSON)
               ======================================================= */}
-          <button
-            title="Export Data ke PDF"
-            onClick={handleExportPDF}
-            className="px-4 py-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all text-sm flex items-center gap-2 min-w-[124px] justify-center shrink-0"
-          >
-            📄 Export PDF
-          </button>
+          <div className="relative group shrink-0">
+            <button
+              disabled={isExporting}
+              className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+            >
+              {isExporting ? <><Spinner color="text-blue-400" /><span>Exporting...</span></> : '⬇ Export ▾'}
+            </button>
 
-          {/* =======================================================
-              TOMBOL EXPORT JSON (TOMBOL LAMA, TETAP ADA)
-              ======================================================= */}
-          <button
-            title="Export Data ke JSON"
-            onClick={handleExport}
-            disabled={isExporting}
-            className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center shrink-0"
-          >
-            {isExporting ? <><Spinner color="text-blue-400" /><span>Exporting...</span></> : '⬇ Export JSON'}
-          </button>
+            {/* Menu Melayang (Muncul saat cursor diletakkan di tombol atas) */}
+            <div className="absolute top-[100%] right-0 mt-2 w-44 bg-[#0a0a20] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] overflow-hidden flex flex-col backdrop-blur-md">
+              <button
+                onClick={handleExportPDF}
+                className="px-4 py-3 text-sm text-left text-slate-300 hover:bg-rose-500/20 hover:text-rose-400 transition-colors flex items-center gap-2"
+              >
+                📄 Format PDF
+              </button>
+              <div className="h-px bg-white/5 w-full" />
+              <button
+                onClick={handleExportJSON}
+                className="px-4 py-3 text-sm text-left text-slate-300 hover:bg-blue-500/20 hover:text-blue-400 transition-colors flex items-center gap-2"
+              >
+                📦 Format JSON
+              </button>
+            </div>
+          </div>
 
           <button
             title="Import Data dari JSON"
@@ -806,7 +807,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         document.body
       )}
 
-      {/* KOTAK UNGU ALGORITMA: & students.length > 0 AGAR HILANG SAAT KOSONG */}
+      {/* KOTAK UNGU ALGORITMA TETAP ADA */}
       {activeAlgo && activeDetails && students.length > 0 && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-4">
@@ -892,15 +893,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         </div>
       )}
 
-      {selectedStudent && <StudentModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />}
-      {isAddModalOpen && (
-        <AddStudentModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onRefresh={() => { fetchStudents(); setIsAddModalOpen(false); }}
-          onNotify={onNotify}
-        />
-      )}
     </div>
   );
 }
