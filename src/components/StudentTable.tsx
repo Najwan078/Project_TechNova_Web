@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom'; 
 import StudentModal from './StudentModal';
 import AddStudentModal from './AddStudentModal';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const API_URL = 'https://tech-nova-backend.vercel.app';
 const ITEMS_PER_PAGE = 10; // Jumlah data per halaman
@@ -69,24 +71,24 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       if (!isDeleting && currentCharIndex <= currentPhrase.length) {
         setAnimatedPlaceholder(currentPhrase.substring(0, currentCharIndex));
         currentCharIndex++;
-        timer = setTimeout(type, 80); // Kecepatan ngetik
+        timer = setTimeout(type, 80); 
       } else if (isDeleting && currentCharIndex >= 0) {
         setAnimatedPlaceholder(currentPhrase.substring(0, currentCharIndex));
         currentCharIndex--;
-        timer = setTimeout(type, 40); // Kecepatan hapus
+        timer = setTimeout(type, 40); 
       } else if (currentCharIndex > currentPhrase.length) {
         isDeleting = true;
-        timer = setTimeout(type, 1500); // Jeda setelah selesai ngetik
+        timer = setTimeout(type, 1500); 
       } else if (currentCharIndex < 0) {
         isDeleting = false;
-        currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length; // Lanjut kata berikutnya
+        currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length; 
         currentCharIndex = 0;
-        timer = setTimeout(type, 500); // Jeda sebelum ngetik kata baru
+        timer = setTimeout(type, 500); 
       }
     };
 
     timer = setTimeout(type, 100);
-    return () => clearTimeout(timer); // Bersihkan memori jika pindah halaman
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchStudents = (params = '') => {
@@ -366,6 +368,47 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     }
   };
 
+  // =========================================================
+  // LOGIKA BARU: LOGIKA CETAK DATA KE PDF (JSPDF)
+  // =========================================================
+  const handleExportPDF = () => {
+    if (students.length === 0) {
+      if (onNotify) onNotify('Data Kosong', 'Tidak ada data untuk diexport ke PDF.', 'warning');
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Header teks laporan
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("LAPORAN DATA MAHASISWA", 14, 15);
+    doc.setFontSize(11);
+    doc.setFont("Helvetica", "normal");
+    doc.text(`TechNova University - Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 21);
+
+    const tableColumn = ["NIM", "Nama Mahasiswa", "Jurusan", "IPK", "Status"];
+    const tableRows = students.map(s => [
+      s.nim,
+      s.nama,
+      s.jurusan,
+      Number(s.ipk).toFixed(2),
+      s.status
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 26,
+      theme: 'grid',
+      headStyles: { fillColor: [14, 116, 144] }, // Nuansa Biru/Cyan Gelap
+      styles: { fontSize: 10, cellPadding: 3 }
+    });
+
+    doc.save(`Laporan_Mahasiswa_${new Date().getTime()}.pdf`);
+    if (onNotify) onNotify('Cetak Berhasil', 'Laporan PDF berhasil diunduh.', 'success');
+  };
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -409,7 +452,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   };
 
   const getIpkColor = (ipk: number) => {
-    if (ipk >= 3.5) return 'text emerald-400';
+    if (ipk >= 3.5) return 'text-emerald-400';
     if (ipk >= 3.0) return 'text-amber-400';
     return 'text-rose-400';
   };
@@ -434,7 +477,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     return details[algo];
   };
 
-  // LOGIKA PAGINATION
   const totalPages = Math.ceil(students.length / ITEMS_PER_PAGE) || 1;
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -456,7 +498,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             <option value="jurusan" className="bg-[#0a0a20] text-white">Jurusan (Sequential)</option>
           </select>
 
-          {/* PERBAIKAN: Menggunakan animatedPlaceholder dari fungsi Typewriter di atas */}
           <input
             type="text"
             value={search}
@@ -483,10 +524,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             className="relative p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(251,191,36,0.05)] hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] disabled:opacity-70 w-10 h-10 shrink-0"
           >
             {isSortingIpk ? <Spinner color="text-amber-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-[100]">
-              Bubble Sort (IPK)
-              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-amber-500/30"></span>
-            </span>
           </button>
 
           <button
@@ -496,10 +533,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             className="relative p-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.15)] disabled:opacity-70 w-10 h-10 shrink-0"
           >
             {isSortingNim ? <Spinner color="text-rose-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="2" y1="12" x2="4" y2="12"/></svg>}
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-rose-500/30 text-rose-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-[100]">
-              Selection Sort (NIM)
-              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-rose-500/30"></span>
-            </span>
           </button>
 
           <button
@@ -509,10 +542,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] disabled:opacity-70 w-10 h-10 shrink-0"
           >
             {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 17 22 12"/></svg>}
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap bg-[#0a0a20] border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg z-[100]">
-              Merge Sort (Semester)
-              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-purple-500/30"></span>
-            </span>
           </button>
 
           <div className="w-px h-8 bg-white/[0.08] mx-1" />
@@ -524,13 +553,22 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             + Tambah
           </button>
 
+          {/* === TOMBOL EXPORT PDF BARU === */}
+          <button
+            title="Cetak Laporan ke format PDF"
+            onClick={handleExportPDF}
+            className="px-4 py-2.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl hover:bg-rose-500/30 transition-all text-sm font-semibold flex items-center gap-2"
+          >
+            📄 Laporan PDF
+          </button>
+
           <button
             title="Export Data ke JSON"
             onClick={handleExport}
             disabled={isExporting}
             className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
           >
-            {isExporting ? <><Spinner color="text-blue-400" /><span>Exporting...</span></> : '⬇ Export JSON'}
+            {isExporting ? <><Spinner /><span>Exporting...</span></> : '⬇ Export JSON'}
           </button>
 
           <button
@@ -539,7 +577,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             disabled={isImporting}
             className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
           >
-            {isImporting ? <><Spinner color="text-violet-400" /><span>Importing...</span></> : '⬆ Import JSON'}
+            {isImporting ? <><Spinner /><span>Importing...</span></> : '⬆ Import JSON'}
           </button>
           <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
 
@@ -756,6 +794,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         document.body
       )}
 
+      {/* KOTAK UNGU (DIKEMBALIKAN PERMANEN SEPERTI SEMULA SESUAI PERMINTAAN) */}
       {activeAlgo && activeDetails && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-4">
