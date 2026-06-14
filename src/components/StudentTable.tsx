@@ -408,11 +408,11 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
         <div className="relative flex-1 flex gap-2">
           
-          {/* V--- PERBAIKAN LEBAR KOTAK SELECT DI SINI (flex-shrink-0 min-w-[140px]) ---V */}
           <select
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl pl-5 pr-8 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 min-w-[175px]"
+            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl py-3 pr-8 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 min-w-[175px]"
+            style={{ paddingLeft: '16px', textIndent: '8px' }} 
           >
             <option value="nama" className="bg-[#0a0a20] text-white">Nama (Linear)</option>
             <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
