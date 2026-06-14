@@ -36,6 +36,9 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [activeAlgo, setActiveAlgo] = useState<string>('');
   const [scanningIndex, setScanningIndex] = useState<number | null>(null); 
   
+  // STATE ANIMASI PLACEHOLDER TYPEWRITER
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [editForm, setEditForm] = useState<Record<string, any>>({});
@@ -50,6 +53,42 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   const [isResetting, setIsResetting] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
+  // =========================================================
+  // ANIMASI TYPEWRITER UNTUK PLACEHOLDER KOTAK PENCARIAN
+  // =========================================================
+  useEffect(() => {
+    const phrases = ["Ketik nama mahasiswa...", "Ketik NIM mahasiswa...", "Ketik jurusan..."];
+    let currentPhraseIndex = 0;
+    let currentCharIndex = 0;
+    let isDeleting = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const type = () => {
+      const currentPhrase = phrases[currentPhraseIndex];
+
+      if (!isDeleting && currentCharIndex <= currentPhrase.length) {
+        setAnimatedPlaceholder(currentPhrase.substring(0, currentCharIndex));
+        currentCharIndex++;
+        timer = setTimeout(type, 80); // Kecepatan ngetik
+      } else if (isDeleting && currentCharIndex >= 0) {
+        setAnimatedPlaceholder(currentPhrase.substring(0, currentCharIndex));
+        currentCharIndex--;
+        timer = setTimeout(type, 40); // Kecepatan hapus
+      } else if (currentCharIndex > currentPhrase.length) {
+        isDeleting = true;
+        timer = setTimeout(type, 1500); // Jeda setelah selesai ngetik
+      } else if (currentCharIndex < 0) {
+        isDeleting = false;
+        currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length; // Lanjut kata berikutnya
+        currentCharIndex = 0;
+        timer = setTimeout(type, 500); // Jeda sebelum ngetik kata baru
+      }
+    };
+
+    timer = setTimeout(type, 100);
+    return () => clearTimeout(timer); // Bersihkan memori jika pindah halaman
+  }, []);
+
   const fetchStudents = (params = '') => {
     setLoading(true);
     fetch(`${API_URL}/api/mahasiswa${params}`)
@@ -60,7 +99,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       .then(data => {
         const dataMahasiswa = data && data.data ? data.data : (Array.isArray(data) ? data : []);
         setStudents(dataMahasiswa);
-        setCurrentPage(1); // Reset ke halaman 1 saat ambil data baru
+        setCurrentPage(1); 
         
         // === EFEK GETAR (HAPTIC FEEDBACK) ===
         if (params.includes('?q=') && dataMahasiswa.length === 0) {
@@ -370,7 +409,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   };
 
   const getIpkColor = (ipk: number) => {
-    if (ipk >= 3.5) return 'text-emerald-400';
+    if (ipk >= 3.5) return 'text emerald-400';
     if (ipk >= 3.0) return 'text-amber-400';
     return 'text-rose-400';
   };
@@ -406,8 +445,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   return (
     <div style={{ animation: 'fadeInUp 0.6s ease-out' }}>
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        
-        {/* KEMBALI KE LAYOUT AWAL, TAPI DENGAN PADDING AMAN UNTUK HURUF "N" */}
         <div className="relative flex-1 flex gap-2">
           <select
             value={searchType}
@@ -418,13 +455,15 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
             <option value="jurusan" className="bg-[#0a0a20] text-white">Jurusan (Sequential)</option>
           </select>
+
+          {/* PERBAIKAN: Menggunakan animatedPlaceholder dari fungsi Typewriter di atas */}
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !isSearching && handleSearch()}
-            placeholder="Ketik nama, NIM, atau jurusan..."
-            className="w-full min-w-[150px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-4 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50"
+            placeholder={animatedPlaceholder} 
+            className="w-full min-w-[150px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-4 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/50"
           />
           <button
             onClick={handleSearch}
