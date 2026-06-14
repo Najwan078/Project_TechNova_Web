@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom'; 
 
-export default function AddStudentModal({ isOpen, onClose, onRefresh }: { isOpen: boolean, onClose: () => void, onRefresh: () => void }) {
+interface AddStudentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onRefresh: () => void;
+  onNotify?: (title: string, desc: string, type: string) => void;
+}
+
+export default function AddStudentModal({ isOpen, onClose, onRefresh, onNotify }: AddStudentModalProps) {
   const [formData, setFormData] = useState({
     nim: '', nama: '', jurusan: '', semester: '', status: 'Aktif', ipk: ''
   });
@@ -23,16 +30,16 @@ export default function AddStudentModal({ isOpen, onClose, onRefresh }: { isOpen
     .then(data => {
       setLoading(false);
       if (data.status === 'success') {
-        alert("Data Berhasil Ditambahkan!");
+        if (onNotify) onNotify('Berhasil', 'Data mahasiswa berhasil ditambahkan!', 'success');
         onRefresh(); 
         onClose();   
       } else {
-        alert("Error: " + data.message); 
+        if (onNotify) onNotify('Gagal', 'Error: ' + data.message, 'warning');
       }
     })
     .catch(err => {
       setLoading(false);
-      alert("Terjadi kesalahan jaringan! Cek console.");
+      if (onNotify) onNotify('Terjadi Kesalahan', 'Gagal terhubung ke server backend.', 'error');
       console.error(err);
     });
   };
@@ -47,7 +54,7 @@ export default function AddStudentModal({ isOpen, onClose, onRefresh }: { isOpen
           onClick={() => !loading && onClose()} 
         />
 
-        {/* Modal Content - Diubah menjadi Background Solid agar tidak tembus pandang */}
+        {/* Modal Content - Background Solid agar tidak tembus pandang */}
         <div 
           className="relative bg-[#0a0a20] border border-white/15 w-full max-w-md p-8 rounded-3xl shadow-2xl animate-modal-popup text-left my-8"
           onClick={e => e.stopPropagation()}
