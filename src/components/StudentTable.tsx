@@ -347,6 +347,9 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     }
   };
 
+  // =========================================================
+  // FUNGSI 1: EXPORT KE JSON (UNTUK BACKUP DATABASE)
+  // =========================================================
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -357,19 +360,19 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'data_mahasiswa.json';
+      a.download = `Data_Mahasiswa_JSON_${new Date().getTime()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      if (onNotify) onNotify('Export Berhasil', 'Data mahasiswa berhasil diexport ke JSON.', 'success');
+      if (onNotify) onNotify('Export JSON Berhasil', 'Data berhasil diexport ke format JSON untuk backup.', 'success');
     } catch {
-      if (onNotify) onNotify('Export Gagal', 'Gagal mengexport data.', 'warning');
+      if (onNotify) onNotify('Export Gagal', 'Gagal mengexport data JSON.', 'warning');
     } finally {
       setIsExporting(false);
     }
   };
 
   // =========================================================
-  // LOGIKA BARU: LOGIKA CETAK DATA KE PDF (JSPDF)
+  // FUNGSI 2: EXPORT KE PDF (UNTUK LAPORAN / PRINT)
   // =========================================================
   const handleExportPDF = () => {
     if (students.length === 0) {
@@ -377,36 +380,40 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
       return;
     }
 
-    const doc = new jsPDF();
-    
-    // Header teks laporan
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("LAPORAN DATA MAHASISWA", 14, 15);
-    doc.setFontSize(11);
-    doc.setFont("Helvetica", "normal");
-    doc.text(`TechNova University - Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 21);
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("LAPORAN DATA MAHASISWA", 14, 15);
+      doc.setFontSize(11);
+      doc.setFont("Helvetica", "normal");
+      doc.text(`TechNova University - Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 21);
 
-    const tableColumn = ["NIM", "Nama Mahasiswa", "Jurusan", "IPK", "Status"];
-    const tableRows = students.map(s => [
-      s.nim,
-      s.nama,
-      s.jurusan,
-      Number(s.ipk).toFixed(2),
-      s.status
-    ]);
+      const tableColumn = ["NIM", "Nama Mahasiswa", "Jurusan", "IPK", "Status"];
+      const tableRows = students.map(s => [
+        s.nim,
+        s.nama,
+        s.jurusan,
+        Number(s.ipk).toFixed(2),
+        s.status.toUpperCase()
+      ]);
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 26,
-      theme: 'grid',
-      headStyles: { fillColor: [14, 116, 144] }, // Nuansa Biru/Cyan Gelap
-      styles: { fontSize: 10, cellPadding: 3 }
-    });
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 26,
+        theme: 'grid',
+        headStyles: { fillColor: [14, 116, 144] }, // Warna Cyan Gelap khas TechNova
+        styles: { fontSize: 10, cellPadding: 3 }
+      });
 
-    doc.save(`Laporan_Mahasiswa_${new Date().getTime()}.pdf`);
-    if (onNotify) onNotify('Cetak Berhasil', 'Laporan PDF berhasil diunduh.', 'success');
+      doc.save(`Laporan_Mahasiswa_PDF_${new Date().getTime()}.pdf`);
+      if (onNotify) onNotify('Export PDF Berhasil', 'Laporan PDF berhasil diunduh.', 'success');
+    } catch (error) {
+      console.error(error);
+      if (onNotify) onNotify('Export Gagal', 'Gagal membuat file PDF.', 'warning');
+    }
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -548,36 +555,41 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium"
+            className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium shrink-0"
           >
             + Tambah
           </button>
 
-          {/* === TOMBOL EXPORT PDF BARU === */}
+          {/* =======================================================
+              TOMBOL EXPORT PDF (TOMBOL BARU)
+              ======================================================= */}
           <button
-            title="Cetak Laporan ke format PDF"
+            title="Export Data ke PDF"
             onClick={handleExportPDF}
-            className="px-4 py-2.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl hover:bg-rose-500/30 transition-all text-sm font-semibold flex items-center gap-2"
+            className="px-4 py-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition-all text-sm flex items-center gap-2 min-w-[124px] justify-center shrink-0"
           >
-            📄 Laporan PDF
+            📄 Export PDF
           </button>
 
+          {/* =======================================================
+              TOMBOL EXPORT JSON (TOMBOL LAMA, TETAP ADA)
+              ======================================================= */}
           <button
             title="Export Data ke JSON"
             onClick={handleExport}
             disabled={isExporting}
-            className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+            className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center shrink-0"
           >
-            {isExporting ? <><Spinner /><span>Exporting...</span></> : '⬇ Export JSON'}
+            {isExporting ? <><Spinner color="text-blue-400" /><span>Exporting...</span></> : '⬇ Export JSON'}
           </button>
 
           <button
             title="Import Data dari JSON"
             onClick={() => importRef.current?.click()}
             disabled={isImporting}
-            className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+            className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center shrink-0"
           >
-            {isImporting ? <><Spinner /><span>Importing...</span></> : '⬆ Import JSON'}
+            {isImporting ? <><Spinner color="text-violet-400" /><span>Importing...</span></> : '⬆ Import JSON'}
           </button>
           <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
 
@@ -585,7 +597,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             title="Reset Pencarian & Filter"
             onClick={handleReset}
             disabled={isResetting}
-            className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center"
+            className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center shrink-0"
           >
             {isResetting ? <><Spinner color="text-slate-400" /><span>Reset...</span></> : 'Reset'}
           </button>
@@ -794,8 +806,8 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         document.body
       )}
 
-      {/* KOTAK UNGU (DIKEMBALIKAN PERMANEN SEPERTI SEMULA SESUAI PERMINTAAN) */}
-      {activeAlgo && activeDetails && (
+      {/* KOTAK UNGU ALGORITMA: & students.length > 0 AGAR HILANG SAAT KOSONG */}
+      {activeAlgo && activeDetails && students.length > 0 && (
         <div className="mt-6 glass rounded-2xl overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out' }}>
           <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
