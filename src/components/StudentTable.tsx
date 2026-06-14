@@ -62,6 +62,17 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
         setStudents(dataMahasiswa);
         setCurrentPage(1); // Reset ke halaman 1 saat ambil data baru
         
+        // === TAMBAHAN EFEK GETAR (HAPTIC FEEDBACK) ===
+        // Jika sedang melakukan pencarian dan hasilnya 0 (kosong)
+        if (params.includes('?q=') && dataMahasiswa.length === 0) {
+          // Cek apakah browser dan device mendukung fitur getar
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            // Pola getar: Nyala 100ms, Mati 50ms, Nyala 100ms (Mirip nada error)
+            navigator.vibrate([100, 50, 100]); 
+          }
+        }
+        // ============================================
+
         const steps = data && data.langkah !== undefined ? data.langkah : 0;
         setLangkah(steps);
 
@@ -512,7 +523,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             </tr>
           </thead>
           
-          {/* UTAMA: Menggunakan key={currentPage} agar React memicu ulang animasi CSS cascading */}
           <tbody key={currentPage}>
             {loading ? (
               Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
@@ -558,7 +568,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
                           ? 'bg-cyan-500/40 shadow-[inset_4px_0_0_0_#22d3ee] scale-[1.01] z-10 relative' 
                           : 'row-glow hover:bg-white/[0.03]'
                       }`}
-                      /* TAMBAHAN UTAMA: cubic-bezier performa tinggi & delay bertahap (index * 35ms) untuk efek cascading */
                       style={{ 
                         animation: 'fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
                         animationDelay: `${index * 35}ms`
@@ -794,6 +803,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onRefresh={() => { fetchStudents(); setIsAddModalOpen(false); }}
+          onNotify={onNotify}
         />
       )}
     </div>
