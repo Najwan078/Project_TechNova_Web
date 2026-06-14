@@ -406,31 +406,32 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
   return (
     <div style={{ animation: 'fadeInUp 0.6s ease-out' }}>
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        <div className="relative flex-1 flex gap-2">
+        <div className="relative flex-1 flex flex-wrap sm:flex-nowrap gap-2">
           
+          {/* PERBAIKAN: w-[200px] menjamin ukuran absolut, px-5 memberi padding kiri/kanan yang nyaman */}
           <select
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl py-3 pr-8 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 min-w-[175px]"
-            style={{ paddingLeft: '16px', textIndent: '8px' }} 
+            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-5 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 w-[200px]"
           >
             <option value="nama" className="bg-[#0a0a20] text-white">Nama (Linear)</option>
             <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
             <option value="jurusan" className="bg-[#0a0a20] text-white">Jurusan (Sequential)</option>
           </select>
           
+          {/* PERBAIKAN: flex-1 menyuruh input mengisi sisa ruang tanpa mem-bully select box */}
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !isSearching && handleSearch()}
             placeholder="Ketik nama, NIM, atau jurusan..."
-            className="w-full min-w-[200px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-4 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50"
+            className="flex-1 min-w-[150px] bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/50"
           />
           <button
             onClick={handleSearch}
             disabled={isSearching || isSortingIpk || isSortingNim || isSortingSemester}
-            className="px-6 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all font-medium text-sm disabled:opacity-70 flex items-center gap-2 min-w-[90px] justify-center"
+            className="px-6 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-all font-medium text-sm disabled:opacity-70 flex items-center gap-2 flex-shrink-0"
           >
             {isSearching ? <><Spinner /><span>Cari...</span></> : 'Cari'}
           </button>
@@ -484,7 +485,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium"
+            className="px-4 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/30 transition-all text-sm font-medium flex-shrink-0"
           >
             + Tambah
           </button>
@@ -493,7 +494,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             title="Export Data ke JSON"
             onClick={handleExport}
             disabled={isExporting}
-            className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+            className="px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center flex-shrink-0"
           >
             {isExporting ? <><Spinner color="text-blue-400" /><span>Exporting...</span></> : '⬇ Export JSON'}
           </button>
@@ -502,7 +503,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             title="Import Data dari JSON"
             onClick={() => importRef.current?.click()}
             disabled={isImporting}
-            className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center"
+            className="px-4 py-2.5 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[124px] justify-center flex-shrink-0"
           >
             {isImporting ? <><Spinner color="text-violet-400" /><span>Importing...</span></> : '⬆ Import JSON'}
           </button>
@@ -512,7 +513,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             title="Reset Pencarian & Filter"
             onClick={handleReset}
             disabled={isResetting}
-            className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center"
+            className="px-4 py-2.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl hover:bg-white/[0.08] transition-all text-sm disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center flex-shrink-0"
           >
             {isResetting ? <><Spinner color="text-slate-400" /><span>Reset...</span></> : 'Reset'}
           </button>
