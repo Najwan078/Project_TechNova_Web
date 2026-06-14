@@ -412,7 +412,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
           <select
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-4 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 min-w-[140px]"
+            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-4 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 min-w-[175px]"
           >
             <option value="nama" className="bg-[#0a0a20] text-white">Nama (Linear)</option>
             <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
