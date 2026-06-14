@@ -542,7 +542,7 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             disabled={isSortingSemester || isSearching}
             className="relative p-2.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-all flex items-center justify-center group shadow-[0_0_15px_rgba(168,85,247,0.05)] hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] disabled:opacity-70 w-10 h-10 shrink-0"
           >
-            {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 17 22 12"/></svg>}
+            {isSortingSemester ? <Spinner color="text-purple-400" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 17 22 12"/></svg>}
           </button>
 
           <div className="w-px h-8 bg-white/[0.08] mx-1" />
