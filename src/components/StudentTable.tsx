@@ -407,15 +407,18 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
     <div style={{ animation: 'fadeInUp 0.6s ease-out' }}>
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
         <div className="relative flex-1 flex gap-2">
+          
+          {/* V--- PERBAIKAN LEBAR KOTAK SELECT DI SINI (flex-shrink-0 min-w-[140px]) ---V */}
           <select
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-3 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer"
+            className="bg-[#0a0a20] border border-white/[0.08] rounded-xl px-4 py-3 text-xs text-slate-300 focus:outline-none focus:border-cyan-400/50 cursor-pointer flex-shrink-0 min-w-[140px]"
           >
             <option value="nama" className="bg-[#0a0a20] text-white">Nama (Linear)</option>
             <option value="nim" className="bg-[#0a0a20] text-white">NIM (Binary)</option>
             <option value="jurusan" className="bg-[#0a0a20] text-white">Jurusan (Sequential)</option>
           </select>
+          
           <input
             type="text"
             value={search}
@@ -435,7 +438,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
 
         <div className="flex gap-2 flex-wrap items-center">
           
-          {/* TOMBOL BUBBLE SORT */}
           <button
             title="Bubble Sort (Berdasarkan IPK)"
             onClick={() => handleSort('ipk')}
@@ -449,7 +451,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             </span>
           </button>
 
-          {/* TOMBOL SELECTION SORT */}
           <button
             title="Selection Sort (Berdasarkan NIM)"
             onClick={() => handleSort('nim')}
@@ -463,7 +464,6 @@ export default function StudentTable({ onNotify }: StudentTableProps) {
             </span>
           </button>
 
-          {/* TOMBOL MERGE SORT */}
           <button
             title="Merge Sort (Berdasarkan Semester)"
             onClick={() => handleSort('semester')}
