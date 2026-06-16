@@ -1,73 +1,44 @@
-# React + TypeScript + Vite
+# 🚀 TechNova University — Manajemen Data Mahasiswa
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen)](https://project-tech-nova-web-bnn4.vercel.app/)
 
-Currently, two official plugins are available:
+Aplikasi web manajemen data mahasiswa (*Full-Stack*) interaktif berbasis AI yang dibangun dalam waktu **5 hari**. Proyek ini mengintegrasikan visualisasi data modern, manajemen CRUD, implementasi algoritma pencarian data, serta chatbot cerdas untuk simulasi administrasi kampus.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🌟 Fitur Utama
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Dashboard Interaktif & Live Tracker:** Memonitor statistik mahasiswa (Total, Aktif, IPK Rata-Rata, Lulus) dengan visualisasi *Progress Ring* dan grafik pembaruan data otomatis setiap 3 detik.
+* **Manajemen Data & CRUD:** Fitur Tambah, Edit, Hapus, serta Export/Import data berbasis JSON pada menu Pencarian Data.
+* **Algoritma Pencarian Terintegrasi:** Implementasi nyata algoritma *Linear Search*, *Binary Search*, dan *Sequential Search* untuk memfilter data mahasiswa berdasarkan kriteria tertentu.
+* **TechBot AI Chatbot:** Asisten kampus online berbasis kecerdasan buatan yang responsif dan mampu memberikan informasi akademik terstruktur (seperti informasi beasiswa, agenda, dll.).
+* **Responsive Dark Mode UI:** Desain antarmuka modern yang konsisten memanfaatkan tren *glassmorphism* dengan skema warna futuristik.
+* **Kalender Akademik & Agenda:** Integrasi jadwal kegiatan kampus (*event markers*) lengkap dengan pengingat agenda bulanan seperti seminar dan pekan UAS.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* **Frontend:** React.js, TypeScript, Vite, Tailwind CSS
+* **Backend:** Python (Flask API)
+* **Deployment:** Vercel
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📷 Tangkapan Layar (Screenshots)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 1. Dashboard Utama & Live Tracker
+*(![Dashboard](./screenshots/Dashboard.png))*
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Fitur Pencarian & Algoritma Data
+*(![Pencarian](./screenshots/Pencarian.png))*
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 3. TechBot AI Chatbot (Informasi Beasiswa)
+*(![Chatbot](./screenshots/TechAI.png))*
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## ⚙️ Cara Menjalankan Proyek Secara Lokal
+
+1. **Clone Repositori:**
+   ```bash
+   git clone [https://github.com/Najwan078/TechNova_web](https://github.com/Najwan078/TechNova_web.git)
+   cd TechNova_web
