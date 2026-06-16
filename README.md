@@ -1,3 +1,10 @@
+# 🚀 TechNova University — Full-Stack Management System
+
+| 🌐 Live Demo Platform | [project-tech-nova-web-bnn4.vercel.app](https://project-tech-nova-web-bnn4.vercel.app/) |
+|---|---|
+
+> **Tech Stack:** React.js, TypeScript, Vite, Tailwind CSS (Frontend) | Python Flask API (Backend)
+
 # 🚀 TechNova University — Manajemen Data Mahasiswa
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen)](https://project-tech-nova-web-bnn4.vercel.app/)
